@@ -276,7 +276,7 @@ function BookChapter({ ch, prog, setProg, onHome, onNext }) {
     const FIG_IC = ['', '', '', '', '', ''];
     body = (
       <div className="wrap g-levelmap">
-        <div className="g-lm-intro"><h1 className="g-h1">{ch.title}</h1>{ch.secs.length > 0 && window.ChapterVideoCard && <ChapterVideoCard ch={ch} />}<p className="g-sub">{ch.secs.length ? `${ch.secs.length} topics · ${ch.secs.reduce((a, s) => a + 1 + (s.extra || []).length, 0)} models & diagrams · 1 boss` : 'Mixed review: practise, then beat the boss!'}</p></div>
+        <div className="g-lm-intro"><h1 className="g-h1">{ch.title}</h1>{window.ChapterVideoCard && <ChapterVideoCard ch={ch} />}<p className="g-sub">{ch.secs.length ? `${ch.secs.length} topics · ${ch.secs.reduce((a, s) => a + 1 + (s.extra || []).length, 0)} models & diagrams · 1 boss` : 'Mixed review: practise, then beat the boss!'}</p></div>
         <div className="g-topics">
           {ch.secs.map((s, i) => { const st = secStars(secDone[s.n]); const figs = [s.ft || s.t, ...(s.extra || []).map(e => e[2])]; return (
             <div key={s.n} className={'g-topic' + (st ? ' done' : '')}>
@@ -336,6 +336,7 @@ function BookList({ chapters, prog, go }) {
             <b className="g-wt">{c.title}</b>
             <span className="g-ws">{c.review ? 'Boss review' : `${c.secs.length} topics · ${c.secs.reduce((a, s) => a + 1 + (s.extra || []).length, 0)} models`}{(window.FORMULAS || {})[c.id] ? ` ·  ${FORMULAS[c.id].length} formulas` : ''}</span>
             <span className="g-wbar"><i style={{ width: (st / mx * 100) + '%' }} /></span>
+            {window.ChapterVideoBtn && <ChapterVideoBtn ch={c} />}
             <span className="g-wst"> {st}/{mx}</span>
           </button>
         );

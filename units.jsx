@@ -47,7 +47,15 @@ function topicScenes(ch, sec) {
   S.push({ k: 'Your turn', h: 'Explore the models, then take the quiz', sub: 'Win up to 3 stars', say: 'Now it is your turn. Explore the models, then take the quiz to win up to three stars!', icn: 'rocket', kind: 'outro' });
   return S;
 }
+function reviewScenes(ch) {
+  const pool = SCENE_ICN[ch.subj] || SCENE_ICN.maths;
+  const S = [{ k: 'End of stage review', h: ch.title, sub: (window.SUBJ_NAME || {})[ch.subj] + ' review in 60 seconds', say: `${ch.title}. Here are the big ideas to remember before the boss.`, icn: SUBJ_ICN[ch.subj], kind: 'title' }];
+  [...(ch.challenge || []), ...(ch.practice || [])].filter(q => typeof q.q === 'string').slice(0, 4).forEach((q, i) => { const a = q.type === 'mc' ? q.opts[q.a] : q.type === 'input' ? q.accept[0] : ''; S.push({ k: 'Remember ' + (i + 1), h: first(q.why) || q.q, sub: a ? q.q + ' → ' + a : '', say: first(q.why) || q.q, icn: pool[i % pool.length], kind: 'point', n: i + 1 }); });
+  S.push({ k: 'Your mission', h: 'Beat the review boss', sub: 'Win a medal to complete the review', say: 'Now beat the review boss and win a medal!', icn: 'trophy', kind: 'outro' });
+  return S;
+}
 function chapterScenes(ch) {
+  if (!ch.secs.length) return reviewScenes(ch);
   const pool = SCENE_ICN[ch.subj] || SCENE_ICN.maths;
   const S = [{ k: (ch.subj === 'computing' ? 'Unit ' : 'Chapter ') + ch.n, h: ch.title, sub: 'The whole chapter in 60 seconds', say: `${ch.title}. Here is the whole chapter in sixty seconds.`, icn: SUBJ_ICN[ch.subj], kind: 'title' }];
   if (ch.secs.length) S.push({ k: 'In this chapter', h: ch.secs.map(s => s.n + '  ' + s.t).join('\n'), say: `There are ${ch.secs.length} topics: ${ch.secs.map(s => s.t).join(', ')}.`, icn: 'list-checks', kind: 'list' });
@@ -139,6 +147,43 @@ function ChapterVideoCard({ ch }) {
   </>;
 }
 
+function ChapterVideoBtn({ ch }) {
+  const [open, setOpen] = React.useState(false);
+  const watched = !!LS8.get('s8f-videos', {})['c:' + ch.id];
+  return <>
+    <span role="button" tabIndex={0} className={'xv-chip' + (watched ? ' done' : '')} onClick={e => { e.stopPropagation(); setOpen(true); }} onKeyDown={e => { if (e.key === 'Enter') { e.stopPropagation(); setOpen(true); } }}><i>{ic(watched ? 'check-circle' : 'play')}</i>{watched ? 'Watched' : '60-second video'}</span>
+    {open && <span onClick={e => e.stopPropagation()}><VideoModal title={(window.SUBJ_NAME || {})[ch.subj] + ' · ' + ch.title} scenes={chapterScenes(ch)} vkey={'c:' + ch.id} onClose={() => setOpen(false)} /></span>}
+  </>;
+}
+
+/* ---------- Video library: every subject, every chapter ---------- */
+function VideoLibrary({ go }) {
+  const subs = ['maths', 'science', 'computing', 'english', 'french'];
+  const [s, setS] = React.useState(() => localStorage.getItem('s8f-vidsub') || 'maths');
+  const [open, setOpen] = React.useState(null);
+  React.useEffect(() => { localStorage.setItem('s8f-vidsub', s); }, [s]);
+  const W = LS8.get('s8f-videos', {});
+  const chs = BOOK.filter(c => c.subj === s);
+  const seen = chs.filter(c => W['c:' + c.id]).length;
+  return (
+    <div className={'wrap g-page subj-' + s} data-screen-label="Video library">
+      <div className="g-welcome vl-head" style={{ background: 'linear-gradient(135deg, #231a3f, color-mix(in oklab, var(--acc) 70%, #231a3f))' }}>
+        <div style={{ fontSize: 52 }}>{ic('monitor-play')}</div>
+        <h1>Chapter videos</h1>
+        <p>A 60-second animated explainer for every chapter in every subject. Watch one before you start a chapter, or use them to revise.</p>
+        <b>{seen} / {chs.length} {(window.SUBJ_NAME || {})[s]} videos watched</b>
+      </div>
+      <div className="vl-tabs">{subs.map(x => <button key={x} className={'vl-tab subj-' + x + (s === x ? ' on' : '')} onClick={() => setS(x)}><span>{ic(SUBJ_ICN[x])}</span>{(window.SUBJ_NAME || {})[x]}<small>{BOOK.filter(c => c.subj === x && W['c:' + c.id]).length}/{BOOK.filter(c => c.subj === x).length}</small></button>)}</div>
+      <div className="vl-grid">{chs.map(c => { const w = !!W['c:' + c.id]; const sc = chapterScenes(c); return (
+        <button key={c.id} className={'vl-card ' + (window.bookCls ? bookCls(c) : '') + (w ? ' done' : '')} onClick={() => setOpen(c)}>
+          <div className="vl-thumb"><div className="vl-ic">{ic(SUBJ_ICN[c.subj])}</div><span className="vl-play">{ic('play')}</span><span className="vl-num">{c.review ? 'Review' : (c.subj === 'computing' ? 'Unit ' : 'Ch ') + c.n}</span>{w && <span className="vl-w">{ic('check-circle')} Watched</span>}</div>
+          <div className="vl-info"><b>{c.title}</b><small>{sc.length} scenes · about 1 min</small></div>
+        </button>); })}</div>
+      {open && <VideoModal title={(window.SUBJ_NAME || {})[open.subj] + ' · ' + open.title} scenes={chapterScenes(open)} vkey={'c:' + open.id} onClose={() => setOpen(null)} />}
+    </div>
+  );
+}
+
 /* ---------- unit header on the subject page ---------- */
 function UnitBlock({ u, prog, go }) {
   const [open, setOpen] = React.useState(false);
@@ -153,14 +198,12 @@ function UnitBlock({ u, prog, go }) {
         <div className="un-ic">{ic(SUBJ_ICN[u.subj])}</div>
         <div className="un-t"><small>Unit</small><h2>{u.name}</h2><div className="un-prog"><i><em style={{ width: done / n * 100 + '%' }} /></i><span>{done} / {n} chapters complete</span></div></div>
         <div className="un-acts">
-          <button className="un-btn vid" onClick={() => setOpen(true)}><span>{ic('play')}</span><b>Unit in 60 s</b><small>{watched ? 'Watched' : 'Overview'}</small></button>
           <button className={'un-btn paper' + (ready ? '' : ' locked')} onClick={() => go('paper:' + u.id)}><span>{ic(ready ? 'exam' : 'lock')}</span><b>Past paper</b><small>{best != null ? 'Best ' + best + '%' : ready ? 'Ready!' : `${n - done} to go`}</small></button>
         </div>
       </div>
       <BookList chapters={chs} prog={prog} go={go} />
-      {open && <VideoModal title={u.name} scenes={unitScenes(u)} vkey={'u:' + u.id} onClose={() => setOpen(false)} />}
     </section>
   );
 }
 
-Object.assign(window, { UNITS, unitOf, chComplete, unitDone, nodeText, ExplainerVideo, VideoModal, TopicVideo, ChapterVideoCard, UnitBlock, SUBJ_ICN, chOf });
+Object.assign(window, { ChapterVideoBtn, VideoLibrary, chapterScenes, UNITS, unitOf, chComplete, unitDone, nodeText, ExplainerVideo, VideoModal, TopicVideo, ChapterVideoCard, UnitBlock, SUBJ_ICN, chOf });

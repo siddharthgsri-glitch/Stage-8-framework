@@ -9,7 +9,7 @@
 <link rel="stylesheet" href="widgets.css?v=17" />
 <link rel="stylesheet" href="game.css?v=30" />
 <link rel="stylesheet" href="study.css?v=30" />
-<link rel="stylesheet" href="units.css?v=5" />
+<link rel="stylesheet" href="units.css?v=8" />
 <link rel="stylesheet" href="icons.css?v=7" />
 <link rel="preload" href="assets/icons/Phosphor-Fill.woff2" as="font" type="font/woff2" crossorigin />
 <script>document.fonts && ['PhIcon','Fredoka','Nunito'].forEach(f => document.fonts.load('20px "' + f + '"', '\ue46a').catch(() => {}));</script>
@@ -19,25 +19,12 @@
 <body>
 <div id="root"></div>
 <script>
-/* AI bridge for Vercel: routes AI requests to /api/complete (a serverless function using your own API key). */
+/* AI bridge: routes AI requests to /api/complete (Vercel serverless function). */
 (function () {
   if (window.genspark && window.genspark.complete) return;
   async function complete(arg) {
     var body = typeof arg === 'string' ? { messages: [{ role: 'user', content: arg }] } : { messages: arg.messages || [] };
-    var r = await fetch('/api/complete', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
-    if (!r.ok) throw new Error('AI unavailable (' + r.status + ')');
-    var j = await r.json(); return j.text || '';
-  }
-  window.genspark = { complete: complete }; window.claude = window.genspark;
-})();
-</script>
-<script>
-/* AI bridge for Vercel: routes AI requests to /api/complete (a serverless function using your own API key). */
-(function () {
-  if (window.genspark && window.genspark.complete) return;
-  async function complete(arg) {
-    var body = typeof arg === 'string' ? { messages: [{ role: 'user', content: arg }] } : { messages: arg.messages || [] };
-    var r = await fetch('/api/complete', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+    var r = await fetch('api/complete', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
     if (!r.ok) throw new Error('AI unavailable (' + r.status + ')');
     var j = await r.json(); return j.text || '';
   }
@@ -85,10 +72,10 @@
 <script type="text/babel" src="formulas.jsx?v=16"></script>
 <script type="text/babel" src="game.jsx?v=16"></script>
 <script type="text/babel" src="auth.jsx?v=16"></script>
-<script type="text/babel" src="player8.jsx?v=16"></script>
+<script type="text/babel" src="player8.jsx?v=19"></script>
 <script type="text/babel" src="study-core.jsx?v=16"></script>
 <script type="text/babel" src="study-pages.jsx?v=16"></script>
-<script type="text/babel" src="units.jsx?v=1"></script>
+<script type="text/babel" src="units.jsx?v=4"></script>
 <script type="text/babel" src="paper.jsx?v=1"></script>
 <script type="text/babel" src="boss-treasure.jsx?v=1"></script>
 <script type="text/babel" src="study-labs.jsx?v=16"></script>
@@ -117,7 +104,7 @@ function TopBar({ go, route, openCmp }) {
     <header className="g-topbar">
       <div className="wrap g-topbar-in">
         <button className="g-logo" onClick={() => go('home')}><span className="g-logo-ic"></span><span><b>Stage 8 framework</b><small>Cambridge Lower Secondary</small></span></button>
-        <nav className="g-nav">{SUBJ.map(s => <button key={s.id} className={subj === s.id ? 'on' : ''} onClick={() => go('subject:' + s.id)}>{s.ic} {s.name}</button>)}<button className={route.startsWith('speak') ? 'on' : ''} onClick={() => go('speak')}> Speak</button><button className={route === 'formulas' ? 'on' : ''} onClick={() => go('formulas')}> Formulas</button><button className={['study','mix','mistakes','exam','planner','album','report','class','teacher','settings'].includes(route) || route.startsWith('lab:') ? 'on' : ''} onClick={() => go('study')}> Study</button></nav>
+        <nav className="g-nav">{SUBJ.map(s => <button key={s.id} className={subj === s.id ? 'on' : ''} onClick={() => go('subject:' + s.id)}>{s.ic} {s.name}</button>)}<button className={route.startsWith('speak') ? 'on' : ''} onClick={() => go('speak')}> Speak</button><button className={route === 'videos' ? 'on' : ''} onClick={() => go('videos')}>{ic('monitor-play')} Videos</button><button className={route === 'formulas' ? 'on' : ''} onClick={() => go('formulas')}> Formulas</button><button className={['study','mix','mistakes','exam','planner','album','report','class','teacher','settings'].includes(route) || route.startsWith('lab:') ? 'on' : ''} onClick={() => go('study')}> Study</button></nav>
         <HUD go={go} openCmp={openCmp} />
       </div>
     </header>
@@ -228,6 +215,7 @@ function App() {
   else if (kind === 'leaderboard') body = <div className="wrap g-page"><Leaderboard /></div>;
   else if (kind === 'formulas') body = <FormulaBook go={setRoute} />;
   else if (kind === 'study') body = <StudyHub go={setRoute} />;
+  else if (kind === 'videos') body = <VideoLibrary go={setRoute} />;
   else if (kind === 'paper') body = <PaperPage key={a} uid={a} go={setRoute} />;
   else if (kind === 'mix') body = <DailyMix key={route} go={setRoute} />;
   else if (kind === 'mistakes') body = <Mistakes go={setRoute} />;

@@ -1,0 +1,36 @@
+/* Icon set (Phosphor, fill weight) merged into every text font via unicode-range,
+   so icon glyphs render inline anywhere text is used. */
+@font-face { font-family: 'PhIcon'; src: url('assets/icons/Phosphor-Fill.woff2') format('woff2'); unicode-range: U+E000-F8FF; font-display: block; }
+input, button, select, textarea { font-family: inherit, 'PhIcon'; }
+pre, code, .py-term, .py-code textarea, .py-ln { font-family: ui-monospace, Menlo, monospace, 'PhIcon'; }
+svg text { font-family: 'Nunito', 'PhIcon', sans-serif; }
+
+/* Medals */
+.md-ic { display: inline-grid; place-items: center; border-radius: 50%; width: 1.5em; height: 1.5em; color: #fff; line-height: 1; vertical-align: middle; box-shadow: inset 0 -3px 0 rgba(0,0,0,.15); }
+.md-ic.m3 { background: linear-gradient(160deg, #ffd65a, #e9a400); }
+.md-ic.m2 { background: linear-gradient(160deg, #e6ebf2, #9aa6b8); }
+.md-ic.m1 { background: linear-gradient(160deg, #f0b483, #b86a2c); }
+.md-ic > span { font-size: .8em; }
+
+/* Avatars get a colour per character */
+.g-av { color: #fff !important; }
+.g-av.av-fox { background: linear-gradient(150deg, #ffb347, #ff7a45) !important; }
+.g-av.av-owl { background: linear-gradient(150deg, #c49a6c, #8a5a35) !important; }
+.g-av.av-panda { background: linear-gradient(150deg, #5b5170, #2b2140) !important; }
+.g-av.av-tiger { background: linear-gradient(150deg, #ffc75f, #f08a24) !important; }
+.g-av.av-octopus { background: linear-gradient(150deg, #ff7eb3, #e2457a) !important; }
+.g-av.av-penguin { background: linear-gradient(150deg, #4facfe, #2f6fc0) !important; }
+.g-av.av-robot { background: linear-gradient(150deg, #9aa6b8, #5b6b84) !important; }
+.g-av.av-alien { background: linear-gradient(150deg, #7ee08f, #2fa84f) !important; }
+.g-av.av-unicorn { background: linear-gradient(150deg, #c9a7ff, #ff7eb3) !important; }
+.g-av.av-dragon { background: linear-gradient(150deg, #43c463, #00897b) !important; }
+.g-av.av-astronaut { background: linear-gradient(150deg, #7f5af0, #2cb1ff) !important; }
+.g-av.av-wizard { background: linear-gradient(150deg, #7f5af0, #4b2bb5) !important; }
+
+/* Icon tint helpers for large decorative icons */
+.g-pcard > div:first-child, .st-tools .g-pcard > div:first-child { color: var(--acc, var(--t2)); }
+.g-subj .ic { color: var(--acc); }
+.g-bigicon, .g-boss-face { color: var(--t2); }
+.fr-emo, .fr-opface, .en-face, .fr-scene { color: var(--acc, var(--t2)); }
+.st-cic { color: var(--t2); }
+.st-card.locked .st-cic { color: #9a92ad; }

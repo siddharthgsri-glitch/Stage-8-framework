@@ -1,0 +1,11 @@
+{
+  "name": "stage8-framework",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Cambridge Lower Secondary Stage 8 learning app (static site + one serverless AI function)",
+  "type": "module",
+  "scripts": {
+    "dev": "vercel dev"
+  },
+  "engines": { "node": ">=18" }
+}

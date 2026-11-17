@@ -1,0 +1,274 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Stage 8 framework · Cambridge Lower Secondary</title>
+<link rel="stylesheet" href="margin.css?v=17" />
+<link rel="stylesheet" href="margin8.css?v=17" />
+<link rel="stylesheet" href="widgets.css?v=17" />
+<link rel="stylesheet" href="game.css?v=30" />
+<link rel="stylesheet" href="study.css?v=30" />
+<link rel="stylesheet" href="units.css?v=5" />
+<link rel="stylesheet" href="icons.css?v=7" />
+<link rel="preload" href="assets/icons/Phosphor-Fill.woff2" as="font" type="font/woff2" crossorigin />
+<script>document.fonts && ['PhIcon','Fredoka','Nunito'].forEach(f => document.fonts.load('20px "' + f + '"', '\ue46a').catch(() => {}));</script>
+<link rel="manifest" href="manifest.json" />
+<meta name="theme-color" content="#ff6f91" />
+</head>
+<body>
+<div id="root"></div>
+<script>
+/* AI bridge for Vercel: routes AI requests to /api/complete (a serverless function using your own API key). */
+(function () {
+  if (window.genspark && window.genspark.complete) return;
+  async function complete(arg) {
+    var body = typeof arg === 'string' ? { messages: [{ role: 'user', content: arg }] } : { messages: arg.messages || [] };
+    var r = await fetch('/api/complete', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+    if (!r.ok) throw new Error('AI unavailable (' + r.status + ')');
+    var j = await r.json(); return j.text || '';
+  }
+  window.genspark = { complete: complete }; window.claude = window.genspark;
+})();
+</script>
+<script>
+/* AI bridge for Vercel: routes AI requests to /api/complete (a serverless function using your own API key). */
+(function () {
+  if (window.genspark && window.genspark.complete) return;
+  async function complete(arg) {
+    var body = typeof arg === 'string' ? { messages: [{ role: 'user', content: arg }] } : { messages: arg.messages || [] };
+    var r = await fetch('/api/complete', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+    if (!r.ok) throw new Error('AI unavailable (' + r.status + ')');
+    var j = await r.json(); return j.text || '';
+  }
+  window.genspark = { complete: complete }; window.claude = window.genspark;
+})();
+</script>
+<script src="icons.js?v=1"></script>
+<script src="auth-boot.js?v=13"></script>
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script src="curriculum8.js"></script>
+<script type="text/babel" src="interactives.jsx?v=16"></script>
+<script type="text/babel" src="interactives8.jsx?v=16"></script>
+<script type="text/babel" src="chapters8.jsx?v=16"></script>
+<script type="text/babel" src="player.jsx?v=16"></script>
+<script type="text/babel" src="companion.jsx?v=16"></script>
+<script type="text/babel" src="speaking.jsx?v=16"></script>
+<script type="text/babel" src="topic8.jsx?v=16"></script>
+<script type="text/babel" src="w-core.jsx?v=16"></script>
+<script type="text/babel" src="w-number.jsx?v=16"></script>
+<script type="text/babel" src="w-algebra.jsx?v=16"></script>
+<script type="text/babel" src="w-geometry.jsx?v=16"></script>
+<script type="text/babel" src="w-data.jsx?v=16"></script>
+<script type="text/babel" src="w-science.jsx?v=16"></script>
+<script type="text/babel" src="w-physics.jsx?v=16"></script>
+<script type="text/babel" src="w-labeldiag.jsx?v=16"></script>
+<script type="text/babel" src="w-bio2.jsx?v=16"></script>
+<script type="text/babel" src="w-chem2.jsx?v=16"></script>
+<script type="text/babel" src="w-phys2.jsx?v=16"></script>
+<script type="text/babel" src="w-computing.jsx?v=16"></script>
+<script type="text/babel" src="w-maths2.jsx?v=16"></script>
+<script type="text/babel" src="w-english.jsx?v=16"></script>
+<script type="text/babel" src="w-french.jsx?v=30"></script>
+<script type="text/babel" src="w-fluids.jsx?v=16"></script>
+<script type="text/babel" src="book-maths-a.jsx?v=16"></script>
+<script type="text/babel" src="book-maths-b.jsx?v=16"></script>
+<script type="text/babel" src="book-maths-c.jsx?v=16"></script>
+<script type="text/babel" src="book-science.jsx?v=16"></script>
+<script type="text/babel" src="book-computing.jsx?v=16"></script>
+<script type="text/babel" src="book-extra.jsx?v=16"></script>
+<script type="text/babel" src="book-english.jsx?v=16"></script>
+<script type="text/babel" src="book-french.jsx?v=16"></script>
+<script type="text/babel" src="book-fluids.jsx?v=16"></script>
+<script type="text/babel" src="formulas.jsx?v=16"></script>
+<script type="text/babel" src="game.jsx?v=16"></script>
+<script type="text/babel" src="auth.jsx?v=16"></script>
+<script type="text/babel" src="player8.jsx?v=16"></script>
+<script type="text/babel" src="study-core.jsx?v=16"></script>
+<script type="text/babel" src="study-pages.jsx?v=16"></script>
+<script type="text/babel" src="units.jsx?v=1"></script>
+<script type="text/babel" src="paper.jsx?v=1"></script>
+<script type="text/babel" src="boss-treasure.jsx?v=1"></script>
+<script type="text/babel" src="study-labs.jsx?v=16"></script>
+<script type="text/babel">
+const { useState: uS, useEffect: uE } = React;
+const CUR = window.CURRICULUM;
+document.body.classList.add('game');
+
+const SUBJ = [
+  { id: 'maths', name: 'Maths', ic: '', blurb: 'Numbers, algebra, shapes & data', book: true },
+  { id: 'science', name: 'Science', ic: '', blurb: 'Biology, chemistry, physics & space', book: true },
+  { id: 'computing', name: 'Computing', ic: '', blurb: 'Networks, code, data & AI', book: true },
+  { id: 'english', name: 'English', ic: '', blurb: 'Reading, writing & speaking', book: true },
+  { id: 'french', name: 'French', ic: '', blurb: 'Speak, read & write French', book: true },
+];
+
+function findTopic(id) { for (const s of CUR) for (const st of s.strands) for (const t of st.topics) if (t.id === id) return { subject: s, strand: st, topic: t }; return null; }
+function loadProg() { try { return JSON.parse(localStorage.getItem('s8f-progress') || '{}'); } catch (e) { return {}; } }
+const sst = v => v === true ? 1 : (v || 0);
+function chStars(c, prog) { const p = (prog.book || {})[c.id] || {}; const sd = p.secDone || {}; return [c.secs.reduce((a, s) => a + sst(sd[s.n]), 0) + (p.stars || 0), c.secs.length * 3 + 3]; }
+function subjStars(id, prog) { return BOOK.filter(c => c.subj === id).reduce((a, c) => { const [s, m] = chStars(c, prog); return [a[0] + s, a[1] + m]; }, [0, 0]); }
+
+function TopBar({ go, route, openCmp }) {
+  const subj = route.startsWith('subject:') ? route.slice(8) : null;
+  return (
+    <header className="g-topbar">
+      <div className="wrap g-topbar-in">
+        <button className="g-logo" onClick={() => go('home')}><span className="g-logo-ic"></span><span><b>Stage 8 framework</b><small>Cambridge Lower Secondary</small></span></button>
+        <nav className="g-nav">{SUBJ.map(s => <button key={s.id} className={subj === s.id ? 'on' : ''} onClick={() => go('subject:' + s.id)}>{s.ic} {s.name}</button>)}<button className={route.startsWith('speak') ? 'on' : ''} onClick={() => go('speak')}> Speak</button><button className={route === 'formulas' ? 'on' : ''} onClick={() => go('formulas')}> Formulas</button><button className={['study','mix','mistakes','exam','planner','album','report','class','teacher','settings'].includes(route) || route.startsWith('lab:') ? 'on' : ''} onClick={() => go('study')}> Study</button></nav>
+        <HUD go={go} openCmp={openCmp} />
+      </div>
+    </header>
+  );
+}
+
+function Home({ go, prog, openCmp }) {
+  const g = useGame(); const L = GAME.levelOf(g.xp);
+  const nm = SR.mistakes().length; const mixDone = (LS8.get('s8f-mix', {}).date === new Date().toISOString().slice(0, 10)); const plan = LS8.get('s8f-plan', null); const planLeft = plan ? Math.max(0, Math.ceil((new Date(plan.exam) - Date.now()) / 864e5)) : 0;
+  const cont = (() => { for (const c of BOOK) { const [s, m] = chStars(c, prog); if (s > 0 && s < m) return c; } return BOOK[0]; })();
+  return (
+    <div className="wrap" data-screen-label="Home">
+      <div className="g-hero">
+        <div className="g-welcome">
+          <div className="g-row"><Avatar g={g} size={56} /><div><b style={{ fontFamily: 'Fredoka', fontSize: 18 }}>Hi {(S8AUTH.user() || {}).name || g.name || 'there'}!</b><div style={{ fontWeight: 700, opacity: .9 }}>Level {L.lvl} · {L.title}</div></div></div>
+          <h1>Ready for today's adventure?</h1>
+          <p>Learn every Stage 8 topic by exploring models, beating bosses and collecting stars, medals and prizes.</p>
+          <div className="g-xpbar big" style={{ maxWidth: 360 }}><i style={{ width: (L.into / L.need * 100) + '%' }} /></div>
+          <div style={{ fontWeight: 700, fontSize: 14, marginBottom: 16 }}>{L.need - L.into} XP to level {L.lvl + 1}</div>
+          <div className="g-row"><button className="btn g-btn big" onClick={() => go('book:' + cont.id)}> Continue: {cont.title.length > 28 ? cont.title.slice(0, 26) + '…' : cont.title}</button><button className="btn g-btn alt big" onClick={() => go('mix')}>{mixDone ? "✓ Today's mix done" : " Today's 10 minutes"}</button></div>
+          <div className="st-homechips">{nm > 0 && <button onClick={() => go('mistakes')}> {nm} mistake{nm > 1 ? 's' : ''} to fix</button>}{plan && <button onClick={() => go('planner')}> {planLeft} days to your exam</button>}<button onClick={() => go('exam')}> Mock exam</button></div>
+        </div>
+        <QuestCard />
+      </div>
+
+      <HomeworkCard go={go} prog={prog} />
+      <h2 className="g-h2">Choose a world</h2>
+      <div className="g-subjects">
+        {SUBJ.map(s => { const [st, mx] = s.book ? subjStars(s.id, prog) : [0, 0]; return (
+          <button key={s.id} className={'g-subj subj-' + s.id} onClick={() => go('subject:' + s.id)}>
+            <span className="ic">{s.ic}</span><b>{s.name}</b><small>{s.blurb}</small>
+            {s.book ? <><span className="g-wbar"><i style={{ width: (st / mx * 100) + '%' }} /></span><small> {st}/{mx}</small></> : <small style={{ marginTop: 'auto' }}> AI practice{s.id === 'french' ? ' +  speaking' : ''}</small>}
+          </button>); })}
+      </div>
+
+      <div className="st-home2"><div><h2 className="g-h2">Class leaderboard</h2><Leaderboard compact /></div><div><h2 className="g-h2">Team goal</h2><ClassChallenge compact go={go} /></div></div>
+      <h2 className="g-h2">Power tools</h2>
+      <div className="g-power-cards" style={{ marginBottom: 60 }}>
+        <button className="g-pcard lc-3" style={{ border: 0, textAlign: 'left', paddingTop: 18 }} onClick={() => openCmp({})}><div style={{ fontSize: 40 }}></div><b style={{ fontFamily: 'Fredoka', fontSize: 20 }}>Study buddy</b><div>Stuck? Get hints (never the answer!)</div></button>
+        <button className="g-pcard lc-2" style={{ border: 0, textAlign: 'left', paddingTop: 18 }} onClick={() => go('speak')}><div style={{ fontSize: 40 }}></div><b style={{ fontFamily: 'Fredoka', fontSize: 20 }}>Speaking coach</b><div>Say French and English words and get a score</div></button>
+        <button className="g-pcard lc-3" style={{ border: 0, textAlign: 'left', paddingTop: 18 }} onClick={() => go('formulas')}><div style={{ fontSize: 40 }}></div><b style={{ fontFamily: 'Fredoka', fontSize: 20 }}>Formula book</b><div>Every formula, with a calculator</div></button>
+        <button className="g-pcard lc-2" style={{ border: 0, textAlign: 'left', paddingTop: 18 }} onClick={() => go('study')}><div style={{ fontSize: 40 }}></div><b style={{ fontFamily: 'Fredoka', fontSize: 20 }}>Study zone</b><div>Mock exams, planner, labs, Python and more</div></button>
+        <button className="g-pcard lc-1" style={{ border: 0, textAlign: 'left', paddingTop: 18 }} onClick={() => go('shop')}><div style={{ fontSize: 40 }}></div><b style={{ fontFamily: 'Fredoka', fontSize: 20 }}>Prize shop</b><div>Spend coins on avatars, themes and power-ups</div></button>
+        <button className="g-pcard lc-0" style={{ border: 0, textAlign: 'left', paddingTop: 18 }} onClick={() => go('trophies')}><div style={{ fontSize: 40 }}></div><b style={{ fontFamily: 'Fredoka', fontSize: 20 }}>Trophy room</b><div>Badges, medals and your stats</div></button>
+      </div>
+    </div>
+  );
+}
+
+function SubjectPage({ subject, go, prog }) {
+  const S = SUBJ.find(s => s.id === subject.id) || {};
+  const book = BOOK.filter(c => c.subj === subject.id);
+  const practised = prog.practised || {};
+  const groups = subject.id === 'science' ? ['Biology', 'Chemistry', 'Physics', 'Earth and space'] : [null];
+  const rev = { sr1: 'Biology', sr2: 'Chemistry', sr3: 'Physics', sr4: 'Earth and space' };
+  const [st, mx] = S.book ? subjStars(subject.id, prog) : [0, 0];
+  return (
+    <div className={'wrap g-page subj-' + subject.id} data-screen-label={'Subject ' + subject.name}>
+      <div className="g-welcome" style={{ background: 'linear-gradient(135deg, color-mix(in oklab, var(--acc) 70%, white), var(--acc))' }}>
+        <div style={{ fontSize: 56 }}>{S.ic}</div>
+        <h1>{S.name || subject.name} world</h1>
+        <p>{S.book ? `${book.filter(c => !c.review).length} ${subject.id === 'computing' ? 'units' : 'chapters'} to conquer. Each one has Learn cards, models to play with, quizzes, a boss and treasure.` : 'Pick a topic and the AI writes practice questions for you, with hints if you get stuck.'}</p>
+        {S.book && <><div className="g-xpbar big" style={{ maxWidth: 360 }}><i style={{ width: (st / mx * 100) + '%' }} /></div><b> {st} / {mx} stars</b></>}
+        {subject.id === 'french' && <div className="g-row" style={{ marginTop: 14 }}><button className="btn g-btn" onClick={() => go('speak:french:sounds')}> Speaking coach</button></div>}
+      </div>
+      {S.book && window.UNITS && UNITS.some(u => u.subj === subject.id) ? UNITS.filter(u => u.subj === subject.id).map(u => <UnitBlock key={u.id} u={u} prog={prog} go={go} />) : S.book && groups.map(gp => (
+        <div key={gp || 'all'} className={gp ? ({ Biology: 'bio-c', Chemistry: 'chem-c', Physics: 'phys-c', 'Earth and space': 'es-c' })[gp] : ''}>
+          {gp && <div className="g-strand-h"><span className="dot" /><h2>{gp}</h2></div>}
+          <div style={{ marginTop: gp ? 0 : 24 }}><BookList chapters={book.filter(c => !gp || c.strand === gp || rev[c.id] === gp)} prog={prog} go={go} /></div>
+        </div>
+      ))}
+      <h2 className="g-h2">{S.book ? ' Extra AI practice by objective' : 'Topics'}</h2>
+      {subject.strands.map(stt => (
+        <div key={stt.id} style={{ marginBottom: 18 }}>
+          <div className="g-strand-h" style={{ margin: '10px 0' }}><h2 style={{ fontSize: 20 }}>{stt.name}</h2></div>
+          <div className="g-world">{stt.topics.map((t, i) => <button key={t.id} className={'g-wcard wc' + (i % 6)} onClick={() => go('topic:' + t.id)} style={{ minHeight: 110 }}><b className="g-wt">{t.title}</b><span className="g-ws">{t.objectives.length} objective{t.objectives.length > 1 ? 's' : ''}{practised[t.id] ? ' · ✓ practised' : ''}</span></button>)}</div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function App() {
+  const [route, setRoute] = uS(() => localStorage.getItem('s8f-route') || 'home');
+  const [prog, setProg] = uS(loadProg);
+  const [cmp, setCmp] = uS({ open: false, ctx: null });
+  uE(() => { localStorage.setItem('s8f-route', route); window.scrollTo(0, 0); }, [route]);
+  uE(() => { localStorage.setItem('s8f-progress', JSON.stringify(prog)); }, [prog]);
+  const openCmp = (ctx) => { setCmp({ open: true, ctx: { ...ctx, _t: Date.now() } }); GAME.event('companion'); };
+  window.openCompanion = openCmp;
+  uE(() => { const k = e => { if (e.key === 'Escape') setCmp(c => ({ ...c, open: false })); }; window.addEventListener('keydown', k); return () => window.removeEventListener('keydown', k); }, []);
+  const markPractised = (id) => { setProg(p => ({ ...p, practised: { ...(p.practised || {}), [id]: ((p.practised || {})[id] || 0) + 1 } })); GAME.answer(true); };
+
+  let body, ctxTopic = null, showBar = true;
+  const [kind, a, b] = route.split(':');
+  if (kind === 'subject' && CUR.find(s => s.id === a)) body = <SubjectPage subject={CUR.find(s => s.id === a)} go={setRoute} prog={prog} />;
+  else if (kind === 'topic' && findTopic(a)) { const f = findTopic(a); ctxTopic = f.topic.title; body = <TopicPage {...f} chapter={null} go={setRoute} prog={prog} markPractised={markPractised} />; }
+  else if (kind === 'book' && BOOK.find(c => c.id === a)) {
+    const ch = BOOK.find(c => c.id === a); showBar = false; ctxTopic = ch.title;
+    const list = BOOK.filter(c => c.subj === ch.subj); const nx = list[list.indexOf(ch) + 1];
+    body = <BookChapter key={ch.id} ch={ch} prog={(prog.book || {})[ch.id] || {}}
+      setProg={patch => setProg(p => ({ ...p, book: { ...(p.book || {}), [ch.id]: { ...((p.book || {})[ch.id] || {}), ...patch } } }))}
+      onHome={() => setRoute('subject:' + ch.subj)} onNext={nx ? () => setRoute('book:' + nx.id) : null} />;
+  }
+  else if (kind === 'trophies') body = <TrophyRoom go={setRoute} />;
+  else if (kind === 'shop') body = <Shop />;
+  else if (kind === 'profile') body = <ProfilePage go={setRoute} />;
+  else if (kind === 'leaderboard') body = <div className="wrap g-page"><Leaderboard /></div>;
+  else if (kind === 'formulas') body = <FormulaBook go={setRoute} />;
+  else if (kind === 'study') body = <StudyHub go={setRoute} />;
+  else if (kind === 'paper') body = <PaperPage key={a} uid={a} go={setRoute} />;
+  else if (kind === 'mix') body = <DailyMix key={route} go={setRoute} />;
+  else if (kind === 'mistakes') body = <Mistakes go={setRoute} />;
+  else if (kind === 'exam') body = <MockExam go={setRoute} />;
+  else if (kind === 'planner') body = <Planner go={setRoute} />;
+  else if (kind === 'album') body = <Album />;
+  else if (kind === 'report') body = <Report go={setRoute} />;
+  else if (kind === 'class') body = <ClassChallenge go={setRoute} />;
+  else if (kind === 'teacher') body = <Teacher go={setRoute} />;
+  else if (kind === 'settings') body = <Settings />;
+  else if (kind === 'lab') { const L = { steps: MathsSteps, practical: Practicals, writing: WritingLab, convo: FrConvo, python: PythonLab }[a]; body = L ? React.createElement(L, { go: setRoute }) : <StudyHub go={setRoute} />; }
+  else if (kind === 'speak') body = (
+    <div className="wrap g-page">
+      <div className="g-welcome subj-french" style={{ background: 'linear-gradient(135deg, #a78bfa, #ff7eb3)', marginBottom: 24 }}><div style={{ fontSize: 56 }}></div><h1>Speaking coach</h1><p>Listen, record yourself and see every word light up. Every phrase you practise earns XP!</p></div>
+      <SpeakingCompanion key={route} initialLang={a === 'english' ? 'english' : 'french'} initialSet={b} />
+    </div>);
+  else body = <Home go={setRoute} prog={prog} openCmp={openCmp} />;
+
+  return (
+    <>
+      {showBar && <TopBar go={setRoute} route={route} openCmp={openCmp} />}
+      {body}
+      {!cmp.open && route !== 'home' && <button className="ask-btn fab" onClick={() => openCmp({ topic: ctxTopic })}><span className="q">?</span>Stuck? Ask</button>}
+      <Companion open={cmp.open} ctx={cmp.ctx} onClose={() => setCmp(c => ({ ...c, open: false }))} />
+      <GameLayer />
+      <button className="a11y-fab" title="Reading & display settings" onClick={() => setRoute('settings')}>Aa</button>
+    </>
+  );
+}
+
+class Boundary extends React.Component {
+  constructor(p) { super(p); this.state = { err: null }; }
+  static getDerivedStateFromError(err) { return { err }; }
+  render() {
+    if (this.state.err) return (<div className="wrap" style={{ padding: '80px 28px' }}><h2 style={{ fontSize: 36, marginBottom: 12 }}>Oops, something went wrong.</h2><p>{String(this.state.err.message)}</p><button className="btn g-btn" onClick={() => { localStorage.setItem('s8f-route', 'home'); location.reload(); }}>Back to home</button></div>);
+    return this.props.children;
+  }
+}
+if ('serviceWorker' in navigator) { window.__s8offline = 'checking'; navigator.serviceWorker.register('/sw.js').then(() => navigator.serviceWorker.ready).then(() => { window.__s8offline = 'ready'; }).catch(() => { window.__s8offline = 'blocked'; }); }
+function Root() { return S8AUTH.current() ? <App /> : <AuthScreen />; }
+ReactDOM.createRoot(document.getElementById('root')).render(<Boundary><Root /></Boundary>);
+</script>
+</body>
+</html>

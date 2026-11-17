@@ -266,7 +266,7 @@ class Boundary extends React.Component {
     return this.props.children;
   }
 }
-if ('serviceWorker' in navigator) { window.__s8offline = 'checking'; navigator.serviceWorker.register('/sw.js').then(() => navigator.serviceWorker.ready).then(() => { window.__s8offline = 'ready'; }).catch(() => { window.__s8offline = 'blocked'; }); }
+if ('serviceWorker' in navigator) { window.__s8offline = 'checking'; navigator.serviceWorker.register('sw.js').then(() => navigator.serviceWorker.ready).then(() => { window.__s8offline = 'ready'; }).catch(() => { window.__s8offline = 'blocked'; }); }
 function Root() { return S8AUTH.current() ? <App /> : <AuthScreen />; }
 ReactDOM.createRoot(document.getElementById('root')).render(<Boundary><Root /></Boundary>);
 </script>

@@ -1,7 +1,7 @@
 {
   "name": "Stage 8 framework",
   "short_name": "Stage 8",
-  "start_url": "/",
+  "start_url": "./",
   "display": "standalone",
   "background_color": "#fff7e6",
   "theme_color": "#ff6f91",

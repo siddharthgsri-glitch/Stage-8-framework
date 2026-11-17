@@ -35,104 +35,175 @@ function nodeText(n) {
 }
 const first = s => String(s || '').split(/(?<=[.!?])\s/)[0];
 
+/* ---------- narration helpers ---------- */
+const speakable = s => String(s || '')
+  .replace(/→/g, ' gives ').replace(/×/g, ' times ').replace(/÷/g, ' divided by ').replace(/−/g, ' minus ')
+  .replace(/\s=\s/g, ' equals ').replace(/²/g, ' squared').replace(/³/g, ' cubed').replace(/√/g, 'square root of ')
+  .replace(/(\d)\s*%/g, '$1 percent').replace(/°C/g, ' degrees Celsius').replace(/°/g, ' degrees')
+  .replace(/\bcm³/g, 'cubic centimetres').replace(/\bm\/s\b/g, 'metres per second').replace(/\bkm\/h\b/g, 'kilometres per hour')
+  .replace(/·/g, ', ').replace(/[“”"]/g, '').replace(/\s+/g, ' ').trim();
+const sentences = t => (String(t).match(/[^.!?]+[.!?]*/g) || [t]).map(s => s.trim()).filter(Boolean);
+const cap = s => s ? s[0].toUpperCase() + s.slice(1) : s;
+const clip = (s, n = 160) => { s = String(s || ''); return s.length > n ? s.slice(0, s.lastIndexOf(' ', n)) + '…' : s; };
+const ORD = ['First', 'Next', 'Then', 'After that', 'Finally'];
+const ansOf = q => q.type === 'mc' ? q.opts[q.a] : q.type === 'input' ? q.accept[0] + (q.suffix ? ' ' + q.suffix : '') : (q.order || []).map(i => q.items[i]).join(' → ');
+const EN = t => [t, 'en-GB'], FR = t => [t, 'fr-FR'];
+
 /* ---------- scene builders ---------- */
 function topicScenes(ch, sec) {
-  const pool = SCENE_ICN[ch.subj] || SCENE_ICN.maths;
-  const S = [{ k: 'Topic ' + sec.n, h: sec.t, sub: (window.SUBJ_NAME || {})[ch.subj] + ' · ' + ch.title, say: `Topic ${sec.n}: ${sec.t}. Here is the big picture in about a minute.`, icn: SUBJ_ICN[ch.subj], kind: 'title' }];
-  (sec.notice || []).forEach((n, i) => { const t = nodeText(n); S.push({ k: ['The big idea', 'Look closer', 'Remember this'][i] || 'Key point', h: t, say: t, icn: pool[i % pool.length], kind: 'point', n: i + 1 }); });
+  const pool = SCENE_ICN[ch.subj] || SCENE_ICN.maths, SN = (window.SUBJ_NAME || {})[ch.subj];
+  const S = [{ k: 'Topic ' + sec.n, h: sec.t, sub: SN + ' · ' + ch.title, say: [EN(`Topic ${sec.n}: ${sec.t}. Let's look at the big ideas in about a minute.`)], icn: SUBJ_ICN[ch.subj], kind: 'title' }];
+  (sec.notice || []).forEach((n, i) => { const t = nodeText(n); S.push({ k: ['The big idea', 'Look closer', 'Remember this'][i] || 'Key point', h: t, say: [EN((i === 0 ? '' : ['', 'Now look closer. ', 'And remember: '][i] || '') + t)], icn: pool[i % pool.length], kind: 'point', n: i + 1 }); });
   const fs = window.secFormulas ? secFormulas(ch, sec.n) : [];
-  if (fs.length) S.push({ k: fs[0].rule ? 'The rule' : 'The formula', h: fs[0].e, sub: fs[0].n + (fs[0].ex ? ' · e.g. ' + fs[0].ex : ''), say: `${fs[0].n}. ${fs[0].e.replace(/·/g, ',')}`, icn: 'function', kind: 'formula' });
+  if (fs.length) S.push({ k: fs[0].rule ? 'The rule' : 'The formula', h: fs[0].e, sub: fs[0].n + (fs[0].ex ? ' · e.g. ' + fs[0].ex : ''), say: [EN(`Here is the ${fs[0].rule ? 'rule' : 'formula'} to use. ${fs[0].n}: ${fs[0].e}.${fs[0].ex ? ' For example, ' + fs[0].ex + '.' : ''}`)], icn: 'function', kind: 'formula' });
   const q = (sec.check || [])[0];
-  if (q && typeof q.q === 'string') { const a = q.type === 'mc' ? q.opts[q.a] : q.type === 'input' ? q.accept[0] : ''; S.push({ k: 'Quick example', h: q.q, sub: a ? 'Answer: ' + a : '', say: `Quick example. ${q.q} The answer is ${a}. ${first(q.why)}`, icn: 'lightbulb', kind: 'example' }); }
-  S.push({ k: 'Your turn', h: 'Explore the models, then take the quiz', sub: 'Win up to 3 stars', say: 'Now it is your turn. Explore the models, then take the quiz to win up to three stars!', icn: 'rocket', kind: 'outro' });
+  if (q && typeof q.q === 'string') S.push({ k: 'Try this', h: q.q, sub: 'Answer: ' + ansOf(q), reveal: true, say: [EN(`Try this one. ${q.q}`), EN('Have a think.'), EN(`The answer is ${ansOf(q)}. ${first(q.why)}`)], icn: 'lightbulb', kind: 'example' });
+  S.push({ k: 'Your turn', h: 'Explore the models, then take the quiz', sub: 'Win up to 3 stars', say: [EN("Now it's your turn. Explore the models, then take the quiz to win up to three stars!")], icn: 'rocket', kind: 'outro' });
   return S;
 }
 function reviewScenes(ch) {
-  const pool = SCENE_ICN[ch.subj] || SCENE_ICN.maths;
-  const S = [{ k: 'End of stage review', h: ch.title, sub: (window.SUBJ_NAME || {})[ch.subj] + ' review in 60 seconds', say: `${ch.title}. Here are the big ideas to remember before the boss.`, icn: SUBJ_ICN[ch.subj], kind: 'title' }];
-  [...(ch.challenge || []), ...(ch.practice || [])].filter(q => typeof q.q === 'string').slice(0, 4).forEach((q, i) => { const a = q.type === 'mc' ? q.opts[q.a] : q.type === 'input' ? q.accept[0] : ''; S.push({ k: 'Remember ' + (i + 1), h: first(q.why) || q.q, sub: a ? q.q + ' → ' + a : '', say: first(q.why) || q.q, icn: pool[i % pool.length], kind: 'point', n: i + 1 }); });
-  S.push({ k: 'Your mission', h: 'Beat the review boss', sub: 'Win a medal to complete the review', say: 'Now beat the review boss and win a medal!', icn: 'trophy', kind: 'outro' });
+  const pool = SCENE_ICN[ch.subj] || SCENE_ICN.maths, SN = (window.SUBJ_NAME || {})[ch.subj];
+  const S = [{ k: 'End of stage review', h: ch.title, sub: SN + ' · quick revision', say: [EN(`${ch.title}. Let's revise the most important ideas before you face the review boss.`)], icn: SUBJ_ICN[ch.subj], kind: 'title' }];
+  [...(ch.challenge || []), ...(ch.practice || [])].filter(q => typeof q.q === 'string' && q.why).slice(0, 4).forEach((q, i) => S.push({ k: 'Revision point ' + (i + 1), h: q.q, sub: ansOf(q) + ': ' + clip(first(q.why), 110), reveal: true, say: [EN(`${ORD[i] || 'Next'}: ${q.q}`), EN(`The answer is ${ansOf(q)}. ${first(q.why)}`)], icn: pool[i % pool.length], kind: 'example', n: i + 1 }));
+  S.push({ k: 'Your mission', h: 'Beat the review boss', sub: 'Win a medal to complete the review', say: [EN('Great revision! Now beat the review boss and win a medal.')], icn: 'trophy', kind: 'outro' });
   return S;
 }
 function chapterScenes(ch) {
   if (!ch.secs.length) return reviewScenes(ch);
-  const pool = SCENE_ICN[ch.subj] || SCENE_ICN.maths;
-  const S = [{ k: (ch.subj === 'computing' ? 'Unit ' : 'Chapter ') + ch.n, h: ch.title, sub: 'The whole chapter in 60 seconds', say: `${ch.title}. Here is the whole chapter in sixty seconds.`, icn: SUBJ_ICN[ch.subj], kind: 'title' }];
-  if (ch.secs.length) S.push({ k: 'In this chapter', h: ch.secs.map(s => s.n + '  ' + s.t).join('\n'), say: `There are ${ch.secs.length} topics: ${ch.secs.map(s => s.t).join(', ')}.`, icn: 'list-checks', kind: 'list' });
-  (ch.recap.points || []).slice(0, 4).forEach((p, i) => S.push({ k: 'Key idea ' + (i + 1), h: p, say: p, icn: pool[i % pool.length], kind: 'point', n: i + 1 }));
-  if ((ch.recap.terms || []).length) S.push({ k: 'Key words', h: ch.recap.terms.slice(0, 4).map(t => t[0]).join('  ·  '), sub: ch.recap.terms[0][0] + ': ' + ch.recap.terms[0][1], say: 'Key words to know: ' + ch.recap.terms.slice(0, 4).map(t => t[0]).join(', ') + '.', icn: 'book-open', kind: 'formula' });
-  S.push({ k: 'Your mission', h: 'Finish every topic, practise, then beat the boss', sub: 'The treasure chest opens when the chapter is complete', say: 'Your mission: finish every topic, practise, then beat the boss to open the treasure chest.', icn: 'trophy', kind: 'outro' });
-  return S;
-}
-function unitScenes(u) {
-  const chs = u.chapters.map(chOf).filter(Boolean);
-  const pool = SCENE_ICN[u.subj] || SCENE_ICN.maths;
-  const S = [{ k: 'Unit', h: u.name, sub: (window.SUBJ_NAME || {})[u.subj] + ' · ' + chs.length + ' chapter' + (chs.length > 1 ? 's' : ''), say: `Welcome to the ${u.name} unit. Here is what you will learn, in one minute.`, icn: SUBJ_ICN[u.subj], kind: 'title' }];
-  chs.slice(0, 6).forEach((c, i) => S.push({ k: (u.subj === 'computing' ? 'Unit ' : 'Chapter ') + c.n, h: c.title, sub: c.recap.points[0], say: `${c.title}. ${c.recap.points[0]}`, icn: pool[i % pool.length], kind: 'point', n: i + 1 }));
-  S.push({ k: 'Unit past paper', h: 'Complete every chapter to unlock the past paper', sub: 'Exam-style questions, hints, a mark scheme and a report card', say: 'When you complete every chapter, you unlock the unit past paper, with a mark scheme and your own report card.', icn: 'exam', kind: 'outro' });
+  const pool = SCENE_ICN[ch.subj] || SCENE_ICN.maths, SN = (window.SUBJ_NAME || {})[ch.subj], lbl = (ch.subj === 'computing' ? 'Unit ' : 'Chapter ') + ch.n;
+  const S = [{ k: SN + ' · ' + lbl, h: ch.title, sub: `${ch.secs.length} topic${ch.secs.length > 1 ? 's' : ''} · the whole chapter in about a minute`, say: [EN(`Welcome to ${SN}, ${lbl}: ${ch.title}.`), EN(`In this short video you'll see the big ideas from all ${ch.secs.length} topics.`)], icn: SUBJ_ICN[ch.subj], kind: 'title' }];
+  S.push({ k: 'In this chapter', h: ch.secs.map(s => s.n + '  ' + s.t).join('\n'), say: [EN(`Here's what you'll learn: ${ch.secs.map(s => s.t).join(', ')}.`)], icn: 'list-checks', kind: 'list' });
+  ch.secs.slice(0, 5).forEach((s, i) => { const n0 = nodeText((s.notice || [])[0]); S.push({ k: 'Topic ' + s.n, h: s.t, sub: clip(n0, 170), say: [EN(`${ORD[i] || 'Next'}, ${s.t}.`), EN(n0)], icn: pool[i % pool.length], kind: 'point', n: i + 1 }); });
+  const F = ((window.FORMULAS || {})[ch.id] || [])[0];
+  if (F) S.push({ k: F.rule ? 'Key rule' : 'Key formula', h: F.e, sub: F.n + (F.ex ? ' · e.g. ' + F.ex : ''), say: [EN(`A key ${F.rule ? 'rule' : 'formula'} in this chapter is ${F.n}: ${F.e}.`), ...(F.ex ? [EN('For example, ' + F.ex + '.')] : [])], icn: 'function', kind: 'formula' });
+  const q = (ch.practice || []).find(x => typeof x.q === 'string' && x.why);
+  if (q) S.push({ k: 'Worked example', h: q.q, sub: 'Answer: ' + ansOf(q) + ' · ' + clip(first(q.why), 100), reveal: true, say: [EN(`Let's try an example. ${q.q}`), EN('Pause and think.'), EN(`The answer is ${ansOf(q)}. ${first(q.why)}`)], icn: 'lightbulb', kind: 'example' });
+  const T = (ch.recap.terms || []).slice(0, 3);
+  if (T.length) S.push({ k: 'Key words', h: T.map(t => t[0] + ': ' + t[1]).join('\n'), say: [EN('Key words to remember.'), ...T.flatMap(([w, d]) => [ch.subj === 'french' ? FR(w) : EN(w), EN((ch.subj === 'french' ? 'means ' : '') + d)])], icn: 'book-open', kind: 'list' });
+  S.push({ k: 'Your mission', h: 'Finish every topic, practise, then beat the boss', sub: 'The treasure chest opens when the chapter is complete', say: [EN("That's the big picture! Now work through each topic, practise, and beat the boss to open the treasure chest.")], icn: 'trophy', kind: 'outro' });
   return S;
 }
 
+/* ---------- voice ---------- */
+const VOICE = { list: [], en: null, fr: null };
+function pickVoices() {
+  if (!window.speechSynthesis) return;
+  const vs = speechSynthesis.getVoices(); if (!vs.length) return;
+  VOICE.list = vs;
+  const rank = (v, lang) => { let s = 0; const n = v.name.toLowerCase(); if (!v.lang || !v.lang.toLowerCase().startsWith(lang.slice(0, 2))) return -1; if (v.lang.replace('_', '-').toLowerCase() === lang.toLowerCase()) s += 4; if (/natural|neural|online/.test(n)) s += 10; if (/google/.test(n)) s += 6; if (/(sonia|libby|ryan|serena|daniel|kate|martha|arthur|amélie|amelie|thomas|denise|henri|audrey|samantha|karen|moira)/.test(n)) s += 5; if (v.localService === false) s += 1; return s; };
+  const best = lang => vs.map(v => [v, rank(v, lang)]).filter(x => x[1] >= 0).sort((a, b) => b[1] - a[1])[0];
+  VOICE.en = (best('en-GB') || best('en-US') || [null])[0]; VOICE.fr = (best('fr-FR') || [null])[0];
+}
+if (window.speechSynthesis) { pickVoices(); speechSynthesis.onvoiceschanged = pickVoices; setTimeout(pickVoices, 800); }
+function sayChunks(chunks, onDone, token) {
+  const synth = window.speechSynthesis; if (!synth) { onDone(false); return; }
+  const parts = []; chunks.forEach(([t, l]) => sentences(speakable(t)).forEach(s => parts.push([s, l])));
+  let i = 0, done = false;
+  const fin = ok => { if (done) return; done = true; onDone(ok); };
+  const next = () => {
+    if (token.dead) return; if (i >= parts.length) { fin(true); return; }
+    const [txt, lang] = parts[i++]; const u = new SpeechSynthesisUtterance(txt);
+    const v = lang.startsWith('fr') ? VOICE.fr : VOICE.en; if (v) u.voice = v; u.lang = lang; u.rate = lang.startsWith('fr') ? 0.85 : 0.98; u.pitch = 1.03;
+    let fired = false; const guard = setTimeout(() => { if (!fired && !token.dead) { fired = true; synth.cancel(); next(); } }, 1500 + txt.split(/\s+/).length * 650);
+    u.onend = () => { if (fired) return; fired = true; clearTimeout(guard); setTimeout(next, 180); };
+    u.onerror = () => { if (fired) return; fired = true; clearTimeout(guard); next(); };
+    synth.speak(u);
+  };
+  next();
+}
+const estDur = s => { const w = (s.say || []).reduce((a, c) => a + String(c[0]).split(/\s+/).length, 0); return Math.max(5, w / 2.4 + (s.reveal ? 3 : 1.5)); };
+
 /* ---------- player ---------- */
 function ExplainerVideo({ scenes, vkey, onEnd, compact }) {
-  const dur = React.useMemo(() => { const d = scenes.map(s => Math.max(6, (String(s.say).split(/\s+/).length / 2.5) + 1.8)); const tot = d.reduce((a, b) => a + b, 0); const k = tot < 50 ? 50 / tot : 1; return d.map(x => x * k); }, [scenes]);
+  const dur = React.useMemo(() => scenes.map(estDur), [scenes]);
   const total = dur.reduce((a, b) => a + b, 0);
-  const starts = dur.reduce((a, d, i) => (a.push(i ? a[i - 1] + dur[i - 1] : 0), a), []);
-  const [t, setT] = React.useState(0), [play, setPlay] = React.useState(false), [cc, setCc] = React.useState(true), [mute, setMute] = React.useState(false), [ended, setEnded] = React.useState(false);
-  const si = Math.min(scenes.length - 1, starts.filter(s => s <= t + 0.001).length - 1);
+  const [si, setSi] = React.useState(0), [play, setPlay] = React.useState(false), [cc, setCc] = React.useState(true), [mute, setMute] = React.useState(false), [ended, setEnded] = React.useState(false), [el, setEl] = React.useState(0), [rev, setRev] = React.useState(false), [line, setLine] = React.useState('');
   const S = scenes[si];
-  const last = React.useRef(-1), raf = React.useRef(0), t0 = React.useRef(0);
+  const tok = React.useRef({ dead: true });
+  const stopAll = () => { tok.current.dead = true; window.speechSynthesis && speechSynthesis.cancel(); };
   React.useEffect(() => {
-    if (!play) { cancelAnimationFrame(raf.current); return; }
-    t0.current = performance.now() - t * 1000;
-    const tick = now => { const nt = (now - t0.current) / 1000; if (nt >= total) { setT(total); setPlay(false); setEnded(true); finish(); return; } setT(nt); raf.current = requestAnimationFrame(tick); };
-    raf.current = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(raf.current);
-  }, [play]);
-  React.useEffect(() => {
-    if (!play || mute || !window.speechSynthesis) return;
-    if (last.current === si) return; last.current = si;
-    speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance(S.say); u.lang = 'en-GB'; u.rate = 1; speechSynthesis.speak(u);
+    setRev(false); setEl(0);
+    if (!play) return;
+    stopAll(); const t = { dead: false }; tok.current = t;
+    const t0 = performance.now(); let raf;
+    const tick = () => { if (t.dead) return; setEl((performance.now() - t0) / 1000); raf = requestAnimationFrame(tick); }; raf = requestAnimationFrame(tick);
+    const advance = () => { if (t.dead) return; if (si + 1 < scenes.length) setSi(si + 1); else { setPlay(false); setEnded(true); finish(); } };
+    let timer;
+    if (S.reveal) timer = setTimeout(() => !t.dead && setRev(true), Math.max(2500, dur[si] * 450));
+    const canSpeak = !mute && window.speechSynthesis && (VOICE.en || speechSynthesis.getVoices().length);
+    if (canSpeak) {
+      const chunks = S.say || [];
+      // show caption line by line + reveal when the answer starts
+      const parts = []; chunks.forEach(([tx, l]) => sentences(speakable(tx)).forEach(x => parts.push(x)));
+      let shown = 0; setLine(parts[0] || '');
+      const wrap = chunks.map(c => c);
+      sayChunksWithCaption(wrap, x => { if (t.dead) return; setLine(x); if (/^The answer is/i.test(x)) setRev(true); }, ok => { if (t.dead) return; setTimeout(advance, 700); }, t);
+    } else {
+      setLine(((S.say || []).map(c => c[0]).join(' ')));
+      timer = setTimeout(advance, dur[si] * 1000);
+      if (S.reveal) setTimeout(() => !t.dead && setRev(true), dur[si] * 550);
+    }
+    return () => { t.dead = true; cancelAnimationFrame(raf); clearTimeout(timer); window.speechSynthesis && speechSynthesis.cancel(); };
   }, [si, play, mute]);
-  React.useEffect(() => { if (!play && window.speechSynthesis) { speechSynthesis.cancel(); last.current = -1; } }, [play]);
-  React.useEffect(() => () => { cancelAnimationFrame(raf.current); window.speechSynthesis && speechSynthesis.cancel(); }, []);
+  React.useEffect(() => () => stopAll(), []);
   const finish = () => { const w = LS8.get('s8f-videos', {}); if (!w[vkey]) { w[vkey] = Date.now(); LS8.set('s8f-videos', w); GAME.award(10, 5, 'Video watched'); } onEnd && onEnd(); };
-  const seek = e => { const r = e.currentTarget.getBoundingClientRect(); const nt = Math.max(0, Math.min(total - 0.1, (e.clientX - r.left) / r.width * total)); setT(nt); t0.current = performance.now() - nt * 1000; last.current = -1; setEnded(false); };
-  const go = i => { const nt = starts[i] + 0.01; setT(nt); t0.current = performance.now() - nt * 1000; last.current = -1; setEnded(false); };
+  const go = i => { setEnded(false); setSi(Math.max(0, Math.min(scenes.length - 1, i))); };
+  const unlock = () => { try { if (window.speechSynthesis) { pickVoices(); speechSynthesis.cancel(); speechSynthesis.resume(); const z = new SpeechSynthesisUtterance(' '); z.volume = 0; speechSynthesis.speak(z); } } catch (e) {} };
+  const toggle = () => { if (ended) { unlock(); setEnded(false); setSi(0); setPlay(true); return; } if (!play) unlock(); setPlay(!play); };
   const fmt = s => Math.floor(s / 60) + ':' + String(Math.floor(s % 60)).padStart(2, '0');
-  const local = t - starts[si], lp = Math.min(1, local / dur[si]);
+  const before = dur.slice(0, si).reduce((a, b) => a + b, 0), lp = play ? Math.min(0.97, el / dur[si]) : 0;
   const watched = !!LS8.get('s8f-videos', {})[vkey];
+  const lines = String(S.h).split('\n');
   return (
     <div className={'xv' + (compact ? ' compact' : '')}>
-      <div className={'xv-stage k-' + S.kind} onClick={() => { if (ended) { go(0); setPlay(true); } else setPlay(!play); }}>
+      <div className={'xv-stage k-' + S.kind} onClick={toggle}>
         <div className="xv-bg"><i /><i /><i /><i /></div>
         <div className="xv-grid" />
         <div key={si} className="xv-scene">
           <div className="xv-icon"><span>{ic(S.icn)}</span></div>
           <div className="xv-k">{S.n ? <b>{S.n}</b> : null}{S.k}</div>
-          <div className={'xv-h' + (String(S.h).length > 90 ? ' long' : '') + (S.kind === 'formula' ? ' eq' : '')}>{String(S.h).split('\n').map((line, li) => <div key={li} className="xv-line" style={{ animationDelay: (0.15 + li * 0.25) + 's' }}>{line}</div>)}</div>
-          {S.sub && <div className="xv-sub">{S.sub}</div>}
+          <div className={'xv-h' + (String(S.h).length > 90 || lines.length > 3 ? ' long' : '') + (S.kind === 'formula' ? ' eq' : '')}>{lines.map((ln, li) => <div key={li} className="xv-line" style={{ animationDelay: (0.15 + li * 0.25) + 's' }}>{ln}</div>)}</div>
+          {S.sub && (!S.reveal || rev) && <div className={'xv-sub' + (S.reveal ? ' xv-ans' : '')}>{S.reveal && <span>{ic('check-circle')}</span>}{S.sub}</div>}
+          {S.reveal && !rev && play && <div className="xv-think">{ic('hourglass')} Think…</div>}
         </div>
-        <div className="xv-brand"><span>{ic('play-circle')}</span> Stage 8 explainer</div>
-        {cc && play && <div className="xv-cc">{S.say}</div>}
-        {!play && <div className="xv-overlay"><button className="xv-big" aria-label="Play">{ic(ended ? 'arrow-counter-clockwise' : 'play')}</button><span>{ended ? 'Watch again' : t > 0 ? 'Paused' : `Play · ${fmt(total)}`}</span></div>}
+        <div className="xv-brand"><span>{ic('play-circle')}</span> Stage 8 explainer · {si + 1}/{scenes.length}</div>
+        {cc && play && line && <div className="xv-cc">{line}</div>}
+        {!play && <div className="xv-overlay"><button className="xv-big" aria-label="Play">{ic(ended ? 'arrow-counter-clockwise' : 'play')}</button><span>{ended ? 'Watch again' : si > 0 ? 'Paused · tap to continue' : 'Play · about ' + fmt(total)}</span></div>}
       </div>
       <div className="xv-ctl">
-        <button className="xv-b" onClick={() => { if (ended) { go(0); } setPlay(!play); }}>{ic(play ? 'pause' : 'play')}</button>
-        <button className="xv-b" onClick={() => go(Math.max(0, si - 1))} title="Previous">{ic('skip-back')}</button>
-        <button className="xv-b" onClick={() => go(Math.min(scenes.length - 1, si + 1))} title="Next">{ic('skip-forward')}</button>
-        <div className="xv-bar" onClick={seek}>{scenes.map((_, i) => <i key={i} style={{ width: dur[i] / total * 100 + '%' }}><em style={{ width: (i < si ? 1 : i === si ? lp : 0) * 100 + '%' }} /></i>)}</div>
-        <span className="xv-time">{fmt(t)} / {fmt(total)}</span>
+        <button className="xv-b" onClick={toggle}>{ic(play ? 'pause' : 'play')}</button>
+        <button className="xv-b" onClick={() => go(si - 1)} title="Previous">{ic('skip-back')}</button>
+        <button className="xv-b" onClick={() => go(si + 1)} title="Next">{ic('skip-forward')}</button>
+        <div className="xv-bar">{scenes.map((_, i) => <i key={i} style={{ width: dur[i] / total * 100 + '%' }} onClick={() => go(i)}><em style={{ width: (i < si || ended ? 1 : i === si ? lp : 0) * 100 + '%' }} /></i>)}</div>
+        <span className="xv-time">{fmt(before + (play ? Math.min(el, dur[si]) : 0))} / {fmt(total)}</span>
         <button className={'xv-b' + (cc ? ' on' : '')} onClick={() => setCc(!cc)} title="Captions">{ic('closed-captioning')}</button>
-        <button className={'xv-b' + (mute ? '' : ' on')} onClick={() => { setMute(!mute); window.speechSynthesis && speechSynthesis.cancel(); last.current = -1; }} title="Narration">{ic(mute ? 'speaker-slash' : 'speaker-high')}</button>
+        <button className={'xv-b' + (mute ? '' : ' on')} onClick={() => setMute(!mute)} title={mute ? 'Turn narration on' : 'Mute narration'}>{ic(mute ? 'speaker-slash' : 'speaker-high')}</button>
         {watched && <span className="xv-done">{ic('check-circle')} Watched</span>}
       </div>
+      {!window.speechSynthesis && <div className="xv-novoice">This browser can't read aloud. Captions are shown instead.</div>}
     </div>
   );
 }
+function sayChunksWithCaption(chunks, onLine, onDone, token) {
+  const synth = window.speechSynthesis;
+  const parts = []; chunks.forEach(([t, l]) => sentences(speakable(t)).forEach(s => parts.push([s, l])));
+  let i = 0, done = false;
+  const fin = ok => { if (done) return; done = true; onDone(ok); };
+  const next = () => {
+    if (token.dead) return; if (i >= parts.length) { fin(true); return; }
+    const [txt, lang] = parts[i++]; onLine(txt);
+    const u = new SpeechSynthesisUtterance(txt);
+    const v = lang.startsWith('fr') ? VOICE.fr : VOICE.en; if (v) u.voice = v; u.lang = lang; u.rate = lang.startsWith('fr') ? 0.85 : 0.98; u.pitch = 1.03;
+    let fired = false; const guard = setTimeout(() => { if (!fired && !token.dead) { fired = true; synth.cancel(); next(); } }, 2000 + txt.split(/\s+/).length * 700);
+    u.onend = () => { if (fired) return; fired = true; clearTimeout(guard); setTimeout(next, /think|pause/i.test(txt) ? 1400 : 200); };
+    u.onerror = e => { if (fired) return; fired = true; clearTimeout(guard); if (e && e.error === 'interrupted') return; setTimeout(next, 300); };
+    synth.speak(u);
+  };
+  next();
+}
 function VideoModal({ title, scenes, vkey, onClose }) {
-  React.useEffect(() => { const k = e => e.key === 'Escape' && onClose(); addEventListener('keydown', k); return () => removeEventListener('keydown', k); }, []);
-  return <div className="g-modal-bg xv-modal" onClick={onClose}><div className="xv-mbox" onClick={e => e.stopPropagation()}><div className="xv-mh"><b>{title}</b><button className="xv-b" onClick={onClose}>{ic('x')}</button></div><ExplainerVideo scenes={scenes} vkey={vkey} /></div></div>;
+  React.useEffect(() => { const k = e => e.key === 'Escape' && onClose(); addEventListener('keydown', k); document.body.style.overflow = 'hidden'; return () => { removeEventListener('keydown', k); document.body.style.overflow = ''; window.speechSynthesis && speechSynthesis.cancel(); }; }, []);
+  return ReactDOM.createPortal(<div className="g-modal-bg xv-modal" onClick={e => { e.stopPropagation(); onClose(); }}><div className="xv-mbox" onClick={e => e.stopPropagation()}><div className="xv-mh"><b>{title}</b><button className="xv-b" onClick={onClose} aria-label="Close">{ic('x')}</button></div><ExplainerVideo scenes={scenes} vkey={vkey} /></div></div>, document.body);
 }
 function TopicVideo({ ch, sec, onNext }) {
   const sc = React.useMemo(() => topicScenes(ch, sec), [ch.id, sec.n]);

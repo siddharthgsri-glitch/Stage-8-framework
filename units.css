@@ -235,3 +235,16 @@
 .vl-num { position: absolute; left: 12px; top: 10px; font: 800 11px 'Nunito', 'PhIcon'; letter-spacing: .08em; text-transform: uppercase; background: rgba(0,0,0,.35); border-radius: 99px; padding: 3px 9px; }
 .vl-w { position: absolute; left: 12px; bottom: 12px; font: 800 11px 'Nunito', 'PhIcon'; background: #2fa84f; border-radius: 99px; padding: 3px 9px; }
 .vl-info { padding: 12px 14px 14px; display: grid; gap: 2px; } .vl-info b { font-family: 'Fredoka', 'PhIcon'; font-size: 16px; line-height: 1.25; } .vl-info small { color: var(--g-ink2); font-weight: 700; }
+
+.xv-modal { position: fixed !important; inset: 0 !important; z-index: 9999 !important; display: grid; place-items: center; background: rgba(18,12,36,.72); padding: 16px; }
+.xv-sub.xv-ans { display: inline-flex; gap: 8px; align-items: center; background: #2fa84f; color: #fff; border-radius: 14px; padding: 8px 14px; opacity: 1; animation: gbounce .6s cubic-bezier(.3,1.6,.5,1); max-width: 56ch; }
+.xv-think { font: 800 13px 'Nunito', 'PhIcon', sans-serif; color: #ffd98a; background: rgba(255,255,255,.1); border-radius: 99px; padding: 5px 12px; animation: gpulse 1.2s infinite; }
+.xv-bar i { cursor: pointer; }
+.xv-novoice { background: #fff3d9; color: #6b4300; font-weight: 700; font-size: 13px; padding: 6px 12px; }
+.k-list .xv-h.long { font-size: clamp(13px, 1.7vw, 19px); }
+
+/* text must be visible even when animations are disabled */
+.xv-line { opacity: 1 !important; animation: xvline .55s both; }
+.xv-sub { opacity: 1 !important; animation: xvline .5s .5s both; }
+.xv-scene { animation: xvin .6s cubic-bezier(.2,.8,.2,1) both; }
+body.a11y-motion .xv-line, body.a11y-motion .xv-sub, body.a11y-motion .xv-scene { animation: none !important; opacity: 1 !important; transform: none !important; }

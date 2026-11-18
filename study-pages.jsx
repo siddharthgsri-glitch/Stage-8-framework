@@ -157,7 +157,7 @@ function MockExam({ go }) {
 function Planner({ go }) {
   const [P, setP] = React.useState(() => LS8.get('s8f-plan', null));
   const [date, setDate] = React.useState(() => new Date(Date.now() + 21 * 864e5).toISOString().slice(0, 10));
-  const [subs, setSubs] = React.useState(['maths', 'science', 'english']), [mins, setMins] = React.useState(30), [rest, setRest] = React.useState([6]);
+  const [subs, setSubs] = React.useState(['maths', 'science', 'english']), [mins, setMins] = React.useState(30), [rest, setRest] = React.useState([6]), [start, setStart] = React.useState('17:00');
   const save = p => { LS8.set('s8f-plan', p); setP(p); };
   const make = () => {
     const prog = LS8.get('s8f-progress', {});
@@ -165,6 +165,10 @@ function Planner({ go }) {
     const weakExam = {}; exams.forEach(e => Object.entries(e.by).forEach(([id, r]) => { weakExam[id] = Math.min(weakExam[id] == null ? 1 : weakExam[id], r.got / r.tot); }));
     const mist = {}; SR.mistakes().forEach(m => mist[m.ch.id] = (mist[m.ch.id] || 0) + 1);
     const chs = BOOK.filter(c => subs.includes(c.subj) && !c.review).map(c => ({ c, score: chPct8(c, prog) * 0.6 + (weakExam[c.id] != null ? weakExam[c.id] : 0.5) * 0.4 - (mist[c.id] || 0) * 0.05 })).sort((a, b) => a.score - b.score);
+    // rotate subjects so each week mixes them (weakest chapter of each subject first)
+    const bySub = {}; chs.forEach(x => (bySub[x.c.subj] = bySub[x.c.subj] || []).push(x));
+    const order = subs.filter(k => bySub[k]); chs.length = 0;
+    for (let i = 0; order.some(k => bySub[k].length); i++) { const k = order[i % order.length]; if (bySub[k].length) chs.push(bySub[k].shift()); }
     const days = []; const end = new Date(date); let d = new Date(); d.setHours(0, 0, 0, 0);
     const perDay = Math.max(1, Math.floor(mins / 20)); let ci = 0;
     while (d < end && days.length < 120) {
@@ -177,33 +181,23 @@ function Planner({ go }) {
       }
       d = new Date(d.getTime() + 864e5);
     }
-    save({ exam: date, subs, mins, days, made: Date.now() });
+    save({ exam: date, subs, mins, start, days, made: Date.now() });
   };
   if (!P) return (
     <div className="wrap g-page" data-screen-label="Revision planner">
-      <PageHead ic="" title="Revision planner" sub="Tell me when your exam is. I'll build a day-by-day plan that starts with your weakest chapters (from your stars, mock exams and mistakes)." grad="linear-gradient(135deg,#43c463,#00c9a7)" />
+      <PageHead ic="" title="Revision timetable" sub="Tell me when your exam is and when you like to study. I'll build a colourful weekly timetable that starts with your weakest chapters (from your stars, mock exams and mistakes)." grad="linear-gradient(135deg,#ff6f91,#ffb347 45%,#4facfe)" />
       <div className="g-card st-form">
         <label> Exam date<input type="date" className="inp" value={date} min={new Date().toISOString().slice(0, 10)} onChange={e => setDate(e.target.value)} /></label>
         <label> Subjects<div className="chips">{['maths', 'science', 'computing', 'english', 'french'].map(s => <button key={s} className={'chip' + (subs.includes(s) ? ' on' : '')} onClick={() => setSubs(subs.includes(s) ? subs.filter(x => x !== s) : [...subs, s])}>{SUBJ_IC[s]} {SUBJ_NM[s]}</button>)}</div></label>
         <label> Time per day<div className="chips">{[20, 30, 45, 60].map(m => <button key={m} className={'chip' + (mins === m ? ' on' : '')} onClick={() => setMins(m)}>{m} min</button>)}</div></label>
         <label> Rest days<div className="chips">{['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((n, i) => <button key={i} className={'chip' + (rest.includes(i) ? ' on' : '')} onClick={() => setRest(rest.includes(i) ? rest.filter(x => x !== i) : [...rest, i])}>{n}</button>)}</div></label>
-        <button className="btn g-btn big" disabled={!subs.length} onClick={make}> Build my plan</button>
+        <label>{ic('alarm')} Start time each day<input type="time" className="inp" value={start} onChange={e => setStart(e.target.value || '17:00')} style={{ maxWidth: 180 }} /></label>
+        <button className="btn g-btn big" disabled={!subs.length} onClick={make}>{ic('calendar-dots')} Build my timetable</button>{false && <span>x</span>}{/* */}
       </div>
     </div>
   );
   const today = new Date().toISOString().slice(0, 10);
-  const tot = P.days.reduce((a, d) => a + d.items.length, 0), dn = P.days.reduce((a, d) => a + d.items.filter(x => x.done).length, 0);
-  const left = Math.max(0, Math.ceil((new Date(P.exam) - Date.now()) / 864e5));
-  const tog = (di, ii) => { const p = JSON.parse(JSON.stringify(P)); const it = p.days[di].items[ii]; it.done = !it.done; if (it.done) GAME.award(5, 2); save(p); };
-  return (
-    <div className="wrap g-page" data-screen-label="Revision plan">
-      <PageHead ic="" title={`${left} days to go`} sub={`Exam on ${new Date(P.exam).toDateString()} · ${P.subs.map(s => SUBJ_NM[s]).join(', ')}`} grad="linear-gradient(135deg,#43c463,#00c9a7)">
-        <div className="g-xpbar big" style={{ maxWidth: 380 }}><i style={{ width: dn / tot * 100 + '%' }} /></div><b>{dn} / {tot} tasks done</b>
-        <div className="g-row" style={{ marginTop: 10 }}><button className="btn g-btn ghost" onClick={() => window.print()}> Print</button><button className="btn g-btn ghost" onClick={() => { if (confirm('Make a new plan?')) save(null) || setP(null); }}>New plan</button></div>
-      </PageHead>
-      <div className="st-plan">{P.days.map((d, di) => <div key={d.d} className={'g-card st-day' + (d.d === today ? ' today' : '') + (d.d < today ? ' past' : '')}><div className="st-dh"><b>{new Date(d.d).toLocaleDateString(undefined, { weekday: 'short', day: 'numeric', month: 'short' })}</b>{d.d === today && <span className="st-pill ok">Today</span>}</div>{d.items.map((it, ii) => <div key={ii} className={'st-task' + (it.done ? ' done' : '')}><button className="st-ck" onClick={() => tog(di, ii)}>{it.done ? '✓' : ''}</button><span onClick={() => go(it.r)}>{it.t}</span></div>)}</div>)}</div>
-    </div>
-  );
+  return <Timetable P={P} save={save} setP={setP} go={go} today={today} />;
 }
 
 /* ---------- Card album ---------- */
@@ -336,4 +330,116 @@ function Settings() {
   );
 }
 
-Object.assign(window, { StudyHub, DailyMix, Mistakes, MockExam, Planner, Album, CardReveal, Report, ClassChallenge, HomeworkCard, Teacher, Settings, PageHead, SUBJ_IC, SUBJ_NM });
+
+/* ---------- Revision timetable (weekly grid) ---------- */
+const TT_COL = {
+  maths: ['#4f8cff', '#2f6fe0', '#eaf2ff'], science: ['#37c871', '#1f9e55', '#e6f8ee'], computing: ['#22b8c9', '#118a99', '#e3f6f8'],
+  english: ['#ff8a5c', '#e2603f', '#fff0e8'], french: ['#a77bff', '#7a4fe0', '#f2ebff'],
+  mix: ['#ffc94d', '#f0a500', '#fff7de'], mistakes: ['#ff6f91', '#e2457a', '#ffeaf0'], exam: ['#3b2a63', '#231a3f', '#ece8f6'],
+};
+const TT_ICN = { maths: 'calculator', science: 'flask', computing: 'laptop', english: 'books', french: 'translate', mix: 'timer', mistakes: 'notebook', exam: 'exam' };
+const TT_NAME = { maths: 'Maths', science: 'Science', computing: 'Computing', english: 'English', french: 'French', mix: "Today's 10 minutes", mistakes: 'Fix mistakes', exam: 'Mock exam' };
+function ttInfo(it) {
+  const r = it.r || '';
+  if (r === 'mix') return { k: 'mix', title: "Today's 10 minutes", sub: 'Daily review mix' };
+  if (r === 'mistakes') return { k: 'mistakes', title: 'Fix 5 mistakes', sub: 'Mistake notebook' };
+  if (r === 'exam') { const m = String(it.t).match(/(Maths|Science|Computing|English|French)/); return { k: 'exam', title: m ? m[1] + ' mock exam' : 'Short mock exam', sub: 'Timed paper' }; }
+  if (r.startsWith('book:')) { const c = BOOK.find(x => x.id === r.slice(5)); if (c) return { k: c.subj, title: c.title, sub: (c.subj === 'computing' ? 'Unit ' : 'Chapter ') + c.n }; }
+  return { k: 'mix', title: String(it.t).replace(/^[\uE000-\uF8FF\s]+/, ''), sub: '' };
+}
+const ttMin = t => { const [h, m] = String(t || '17:00').split(':').map(Number); return h * 60 + (m || 0); };
+const ttFmt = m => { const h = Math.floor(m / 60) % 24, mm = m % 60; return String(h).padStart(2, '0') + ':' + String(mm).padStart(2, '0'); };
+const ttISO = d => { const x = new Date(d); x.setMinutes(x.getMinutes() - x.getTimezoneOffset()); return x.toISOString().slice(0, 10); };
+function Timetable({ P, save, setP, go, today }) {
+  const start = ttMin(P.start || '17:00');
+  const perDay = Math.max(1, Math.floor((P.mins || 30) / 20));
+  const slotLen = Math.max(15, Math.round(((P.mins || 30) - 10) / perDay / 5) * 5);
+  const durOf = k => k === 'mix' || k === 'mistakes' ? 10 : k === 'exam' ? 20 : slotLen;
+  const byDate = {}; P.days.forEach((d, di) => byDate[d.d] = di);
+  // weeks Mon..Sun from the first plan day to the exam
+  const first = new Date(P.days.length ? P.days[0].d : today); const monday = new Date(first); monday.setDate(first.getDate() - ((first.getDay() + 6) % 7));
+  const examD = new Date(P.exam); const weeks = []; for (let w = new Date(monday); w <= examD; w.setDate(w.getDate() + 7)) weeks.push(new Date(w));
+  const curWeek = Math.max(0, weeks.findIndex(w => { const e = new Date(w); e.setDate(e.getDate() + 7); return new Date(today) >= w && new Date(today) < e; }));
+  const [wi, setWi] = React.useState(curWeek < 0 ? 0 : curWeek);
+  const W = weeks[Math.min(wi, weeks.length - 1)] || monday;
+  const days = Array.from({ length: 7 }, (_, i) => { const d = new Date(W); d.setDate(W.getDate() + i); return d; });
+  const rows = Math.max(1, ...days.map(d => { const di = byDate[ttISO(d)]; return di == null ? 0 : P.days[di].items.length; }));
+  const rowStart = []; let tcur = start; for (let r = 0; r < rows; r++) { rowStart.push(tcur); tcur += (r === 0 ? 10 : slotLen) + 5; }
+  const tot = P.days.reduce((a, d) => a + d.items.length, 0), dn = P.days.reduce((a, d) => a + d.items.filter(x => x.done).length, 0);
+  const left = Math.max(0, Math.ceil((examD - new Date(today)) / 864e5));
+  const tog = (di, ii) => { const p = JSON.parse(JSON.stringify(P)); const it = p.days[di].items[ii]; it.done = !it.done; if (it.done) { GAME.award(5, 2); if (p.days[di].items.every(x => x.done)) GAME.toast('Day complete! Great revision.', true); } save(p); };
+  const setStart = v => save({ ...P, start: v });
+  // subject minutes this week + overall
+  const weekMins = {}; days.forEach(d => { const di = byDate[ttISO(d)]; if (di == null) return; P.days[di].items.forEach(it => { const k = ttInfo(it).k; weekMins[k] = (weekMins[k] || 0) + durOf(k); }); });
+  const allSubs = ['maths', 'science', 'computing', 'english', 'french'].filter(k => P.subs.includes(k));
+  const wkDone = days.reduce((a, d) => { const di = byDate[ttISO(d)]; return di == null ? a : a + P.days[di].items.filter(x => x.done).length; }, 0), wkTot = days.reduce((a, d) => { const di = byDate[ttISO(d)]; return di == null ? a : a + P.days[di].items.length; }, 0);
+  const DN = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+  return (
+    <div className="wrap g-page tt" data-screen-label="Revision timetable">
+      <div className="tt-hero">
+        <div className="tt-blobs"><i /><i /><i /><i /></div>
+        <div className="tt-count"><b>{left}</b><small>day{left !== 1 ? 's' : ''} to go</small></div>
+        <div className="tt-ht">
+          <small>{ic('calendar-dots')} My revision timetable</small>
+          <h1>Exam on {examD.toLocaleDateString(undefined, { weekday: 'long', day: 'numeric', month: 'long' })}</h1>
+          <div className="tt-subs">{allSubs.map(k => <span key={k} style={{ '--c1': TT_COL[k][0], '--c2': TT_COL[k][1] }}>{ic(TT_ICN[k])} {TT_NAME[k]}</span>)}</div>
+          <div className="tt-prog"><i><em style={{ width: (tot ? dn / tot * 100 : 0) + '%' }} /></i><b>{dn} / {tot} sessions done</b></div>
+        </div>
+        <div className="tt-hacts st-noprint">
+          <label className="tt-time">{ic('alarm')} Starts at <input type="time" value={P.start || '17:00'} onChange={e => setStart(e.target.value || '17:00')} /></label>
+          <button className="btn g-btn ghost small" onClick={() => window.print()}>{ic('printer')} Print week</button>
+          <button className="btn g-btn ghost small" onClick={() => { if (confirm('Make a new timetable? Your ticks will be lost.')) { save(null); setP(null); } }}>{ic('arrow-counter-clockwise')} New timetable</button>
+        </div>
+      </div>
+
+      <div className="tt-bar st-noprint">
+        <button className="tt-nav" disabled={wi <= 0} onClick={() => setWi(wi - 1)}>{ic('skip-back')}</button>
+        <div className="tt-wk"><b>Week {wi + 1} of {weeks.length}</b><small>{days[0].toLocaleDateString(undefined, { day: 'numeric', month: 'short' })} – {days[6].toLocaleDateString(undefined, { day: 'numeric', month: 'short' })} · {wkDone}/{wkTot} done</small></div>
+        <button className="tt-nav" disabled={wi >= weeks.length - 1} onClick={() => setWi(wi + 1)}>{ic('skip-forward')}</button>
+        {wi !== curWeek && curWeek >= 0 && <button className="g-pill" onClick={() => setWi(curWeek)}>This week</button>}
+      </div>
+
+      <div className="tt-scroll">
+        <table className="tt-grid">
+          <thead><tr><th className="tt-corner">{ic('clock')}</th>{days.map((d, i) => { const iso = ttISO(d); const isT = iso === today, isE = iso === P.exam, di = byDate[iso]; const dd = di != null ? P.days[di] : null; const full = dd && dd.items.every(x => x.done); return <th key={i} className={(isT ? 'today ' : '') + (isE ? 'exam ' : '') + (full ? 'full' : '')}><b>{DN[i]}</b><span>{d.getDate()}</span>{isT && <em>Today</em>}{isE && <em>Exam!</em>}{full && !isT && <em>{ic('check-circle')}</em>}</th>; })}</tr></thead>
+          <tbody>
+            {Array.from({ length: rows }, (_, r) => (
+              <tr key={r}>
+                <th className="tt-t"><b>{ttFmt(rowStart[r])}</b><small>Session {r + 1}</small></th>
+                {days.map((d, i) => {
+                  const iso = ttISO(d), di = byDate[iso], isE = iso === P.exam;
+                  if (isE) return r === 0 ? <td key={i} rowSpan={rows} className="tt-examday"><div>{ic('trophy')}<b>Exam day</b><small>You've got this!</small></div></td> : null;
+                  if (iso > P.exam) return r === 0 ? <td key={i} rowSpan={rows} className="tt-after" /> : null;
+                  if (di == null) return r === 0 ? <td key={i} rowSpan={rows} className={'tt-rest' + (iso < (P.days[0] || {}).d ? ' before' : '')}><div>{iso < (P.days[0] || {}).d ? '' : <>{ic('bed')}<b>Rest day</b><small>Recharge!</small></>}</div></td> : null;
+                  const it = P.days[di].items[r];
+                  if (!it) return <td key={i} className="tt-free" />;
+                  const inf = ttInfo(it), col = TT_COL[inf.k] || TT_COL.mix, dur = durOf(inf.k);
+                  return (
+                    <td key={i} className="tt-cell">
+                      <div className={'tt-slot k-' + inf.k + (it.done ? ' done' : '') + (iso < today && !it.done ? ' missed' : '')} style={{ '--c1': col[0], '--c2': col[1], '--c3': col[2] }}>
+                        <button className="tt-ck" onClick={() => tog(di, r)} aria-label="Mark done">{it.done ? ic('check') : ''}</button>
+                        <div className="tt-sbody" onClick={() => go(it.r)}>
+                          <span className="tt-si">{ic(TT_ICN[inf.k])}</span>
+                          <small>{TT_NAME[inf.k] === inf.title ? inf.sub : (['mix', 'mistakes', 'exam'].includes(inf.k) ? inf.sub : TT_NAME[inf.k] + ' · ' + inf.sub)}</small>
+                          <b>{inf.title}</b>
+                          <i>{ic('clock')} {dur} min</i>
+                        </div>
+                      </div>
+                    </td>
+                  );
+                })}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      <div className="tt-foot">
+        <div className="tt-legend">{['maths', 'science', 'computing', 'english', 'french', 'mix', 'mistakes', 'exam'].filter(k => !TT_NAME[k] || allSubs.includes(k) || ['mix', 'mistakes', 'exam'].includes(k)).map(k => <span key={k} style={{ '--c1': TT_COL[k][0], '--c2': TT_COL[k][1] }}><i>{ic(TT_ICN[k])}</i>{TT_NAME[k]}{weekMins[k] ? <em>{weekMins[k]} min</em> : null}</span>)}</div>
+        <p className="g-sub">Tap a session to open it, and tick the circle when you've finished. Chapters you find hardest come first. Breaks of 5 minutes are built in between sessions.</p>
+      </div>
+    </div>
+  );
+}
+
+Object.assign(window, { Timetable, StudyHub, DailyMix, Mistakes, MockExam, Planner, Album, CardReveal, Report, ClassChallenge, HomeworkCard, Teacher, Settings, PageHead, SUBJ_IC, SUBJ_NM });

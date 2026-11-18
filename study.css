@@ -1,5 +1,69 @@
 /* Study zone styles */
 .st-head { margin: 20px 0 22px; }
+
+/* ===== Revision timetable ===== */
+.tt-hero { position: relative; overflow: hidden; display: grid; grid-template-columns: auto 1fr auto; gap: 22px; align-items: center; margin: 20px 0 16px; padding: 24px 26px; border-radius: 28px; color: #fff; background: linear-gradient(120deg, #7f5af0 0%, #ff6f91 45%, #ffb347 100%); box-shadow: var(--g-sh); }
+.tt-blobs { position: absolute; inset: 0; pointer-events: none; }
+.tt-hero > .tt-count { grid-row: span 2; }
+.tt-blobs i { position: absolute; border-radius: 50%; background: rgba(255,255,255,.14); }
+.tt-blobs i:nth-child(1) { width: 220px; height: 220px; right: -60px; top: -80px; } .tt-blobs i:nth-child(2) { width: 120px; height: 120px; left: 30%; bottom: -60px; } .tt-blobs i:nth-child(3) { width: 60px; height: 60px; right: 26%; top: 12px; background: rgba(255,255,255,.2); } .tt-blobs i:nth-child(4) { width: 34px; height: 34px; left: 18px; bottom: 14px; background: rgba(255,255,255,.22); }
+.tt-count { position: relative; width: 112px; height: 112px; border-radius: 30px; background: rgba(255,255,255,.95); color: #2b2140; display: grid; place-items: center; align-content: center; box-shadow: 0 8px 0 rgba(0,0,0,.12); }
+.tt-count b { font-family: 'Fredoka', 'PhIcon'; font-size: 46px; line-height: 1; background: linear-gradient(135deg, #7f5af0, #ff6f91); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.tt-count small { font-weight: 800; font-size: 12px; color: #5b5170; }
+.tt-ht { position: relative; display: grid; gap: 8px; }
+.tt-ht > small { font: 800 12px 'Nunito', 'PhIcon'; letter-spacing: .12em; text-transform: uppercase; opacity: .95; }
+.tt-ht h1 { font-size: clamp(22px, 3vw, 32px); margin: 0; }
+.tt-subs { display: flex; gap: 6px; flex-wrap: wrap; }
+.tt-subs span { background: linear-gradient(135deg, var(--c1), var(--c2)); border: 2px solid rgba(255,255,255,.6); border-radius: 99px; padding: 4px 12px; font: 800 13px 'Nunito', 'PhIcon'; }
+.tt-prog { display: flex; align-items: center; gap: 10px; } .tt-prog i { flex: 1; max-width: 340px; height: 12px; border-radius: 99px; background: rgba(255,255,255,.3); overflow: hidden; } .tt-prog em { display: block; height: 100%; background: #fff; border-radius: 99px; } .tt-prog b { font-size: 14px; }
+.tt-hero { grid-template-columns: auto 1fr !important; }
+.tt-hacts { position: relative; grid-column: 2; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.tt-hacts .btn { background: rgba(255,255,255,.95) !important; }
+.tt-time { display: flex; align-items: center; gap: 8px; background: rgba(255,255,255,.95); color: #2b2140; border-radius: 14px; padding: 6px 10px; font-weight: 800; font-size: 13px; }
+.tt-time input { border: 0; background: #f3eff9; border-radius: 8px; padding: 4px 6px; font: 700 14px 'Nunito', 'PhIcon'; color: #2b2140; }
+@media (max-width: 700px) { .tt-hacts { grid-column: 1 / -1; } .tt-count { width: 84px; height: 84px; } .tt-count b { font-size: 34px; } }
+.tt-bar { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+.tt-nav { width: 44px; height: 44px; border-radius: 14px; border: 0; background: #fff; box-shadow: 0 4px 0 #e5ddef; font-size: 18px; cursor: pointer; color: #2b2140; }
+.tt-nav:disabled { opacity: .35; cursor: default; }
+.tt-wk { display: grid; } .tt-wk b { font-family: 'Fredoka', 'PhIcon'; font-size: 20px; } .tt-wk small { font-weight: 700; color: var(--g-ink2); }
+.tt-scroll { overflow-x: auto; border-radius: 24px; box-shadow: var(--g-sh); background: #fff; }
+.tt-grid { width: 100%; min-width: 860px; border-collapse: separate; border-spacing: 6px; table-layout: fixed; }
+.tt-grid th, .tt-grid td { vertical-align: top; }
+.tt-grid thead th { padding: 10px 6px; border-radius: 16px; background: #f6f2fc; text-align: center; font-family: 'Fredoka', 'PhIcon'; color: #2b2140; }
+.tt-grid thead th b { display: block; font-size: 15px; } .tt-grid thead th span { display: block; font-size: 24px; line-height: 1.1; }
+.tt-grid thead th em { display: inline-block; margin-top: 4px; font: 800 10.5px 'Nunito', 'PhIcon'; letter-spacing: .06em; text-transform: uppercase; background: #fff; border-radius: 99px; padding: 2px 8px; color: #2b2140; }
+.tt-grid thead th.today { background: linear-gradient(135deg, #ff6f91, #ffb347); color: #fff; box-shadow: 0 4px 0 #d94d74; }
+.tt-grid thead th.exam { background: linear-gradient(135deg, #7f5af0, #4facfe); color: #fff; }
+.tt-grid thead th.full:not(.today) em { background: #2fa84f; color: #fff; }
+.tt-corner { width: 88px; font-size: 22px !important; color: #8b84a0 !important; background: transparent !important; }
+.tt-t { width: 88px; text-align: center; padding-top: 12px; } .tt-t b { display: block; font-family: 'Fredoka', 'PhIcon'; font-size: 18px; color: #2b2140; } .tt-t small { font: 800 10.5px 'Nunito', 'PhIcon'; color: #8b84a0; text-transform: uppercase; letter-spacing: .05em; }
+.tt-cell, .tt-free { height: 132px; }
+.tt-free { background: repeating-linear-gradient(45deg, #faf8fd 0 8px, #f4f0fa 8px 16px); border-radius: 16px; }
+.tt-slot { position: relative; height: 100%; min-height: 126px; box-sizing: border-box; border-radius: 18px; padding: 10px 10px 10px 12px; color: #fff; background: linear-gradient(150deg, var(--c1), var(--c2)); box-shadow: 0 5px 0 color-mix(in oklab, var(--c2) 70%, black); overflow: hidden; transition: transform .12s, filter .2s; }
+.tt-slot::after { content: ''; position: absolute; right: -18px; bottom: -18px; width: 70px; height: 70px; border-radius: 50%; background: rgba(255,255,255,.14); }
+.tt-slot:hover { transform: translateY(-3px); }
+.tt-slot.k-mix { color: #4a3300; } .tt-slot.k-mix .tt-ck { border-color: rgba(74,51,0,.45); color: #4a3300; } .tt-slot.k-mix .tt-si { background: rgba(255,255,255,.55); }
+.tt-sbody { position: relative; z-index: 1; display: grid; gap: 3px; cursor: pointer; height: 100%; align-content: start; padding-right: 26px; }
+.tt-si { width: 30px; height: 30px; border-radius: 10px; background: rgba(255,255,255,.25); display: grid; place-items: center; font-size: 17px; margin-bottom: 2px; }
+.tt-sbody small { font: 800 10.5px 'Nunito', 'PhIcon'; text-transform: uppercase; letter-spacing: .05em; opacity: .9; }
+.tt-sbody b { font-family: 'Fredoka', 'PhIcon'; font-size: 14.5px; font-weight: 600; line-height: 1.2; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.tt-sbody i { font-style: normal; font: 800 11.5px 'Nunito', 'PhIcon'; opacity: .92; }
+.tt-ck { position: absolute; z-index: 2; right: 8px; top: 8px; width: 26px; height: 26px; border-radius: 50%; border: 2.5px solid rgba(255,255,255,.75); background: transparent; color: #fff; display: grid; place-items: center; font-size: 14px; cursor: pointer; }
+.tt-slot.done { filter: saturate(.55); }
+.tt-slot.done .tt-ck { background: #fff; color: var(--c2); border-color: #fff; animation: gbounce .4s; }
+.tt-slot.done .tt-sbody b { text-decoration: line-through; text-decoration-thickness: 2px; }
+.tt-slot.missed { outline: 3px dashed rgba(255,107,107,.9); outline-offset: -3px; }
+.tt-rest div, .tt-examday div { height: 100%; min-height: 132px; border-radius: 18px; display: grid; place-items: center; align-content: center; gap: 4px; text-align: center; font-size: 30px; }
+.tt-rest div { background: repeating-linear-gradient(-45deg, #f1f7ff 0 12px, #e8f2ff 12px 24px); color: #6a8bb8; }
+.tt-rest.before div { background: transparent; }
+.tt-rest b, .tt-examday b { font-family: 'Fredoka', 'PhIcon'; font-size: 16px; } .tt-rest small, .tt-examday small { font-weight: 700; font-size: 12px; }
+.tt-examday div { background: linear-gradient(160deg, #ffd166, #ff6f91 60%, #7f5af0); color: #fff; box-shadow: 0 5px 0 #b8336a; }
+.tt-foot { margin: 16px 0 60px; display: grid; gap: 8px; }
+.tt-legend { display: flex; flex-wrap: wrap; gap: 8px; }
+.tt-legend span { display: inline-flex; align-items: center; gap: 8px; background: #fff; border-radius: 99px; padding: 5px 12px 5px 5px; font-weight: 800; font-size: 13px; box-shadow: 0 3px 0 #ece6f5; }
+.tt-legend i { width: 26px; height: 26px; border-radius: 50%; background: linear-gradient(135deg, var(--c1), var(--c2)); color: #fff; display: grid; place-items: center; font-style: normal; font-size: 14px; }
+.tt-legend em { font-style: normal; background: #f3eff9; border-radius: 99px; padding: 1px 8px; font-size: 11.5px; color: #5b5170; }
+@media print { .tt-hero, .tt-slot, .tt-grid thead th, .tt-examday div, .tt-rest div, .tt-legend i, .tt-subs span { -webkit-print-color-adjust: exact; print-color-adjust: exact; box-shadow: none; } .tt-grid { min-width: 0; } .tt-scroll { overflow: visible; box-shadow: none; } @page { size: landscape; margin: 10mm; } }
 .st-tools { grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); margin-bottom: 60px; }
 .st-tools .g-pcard { border: 0; text-align: left; padding-top: 18px; cursor: pointer; display: grid; gap: 4px; align-content: start; }
 .st-tools .g-pcard b { font-family: 'Fredoka', 'PhIcon'; font-size: 19px; }

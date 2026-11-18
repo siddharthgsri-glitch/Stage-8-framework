@@ -9,7 +9,27 @@ const pur = c('% purity', '% purity = mass of chemical ÷ total mass × 100', [V
 const mean = c('Mean', 'mean = total of values ÷ number of values', [V('x', 'mean'), V('T', 'total'), V('n', 'number of values')], { x: v => v.T / v.n, T: v => v.x * v.n, n: v => v.T / v.x }, 'Total 40 from 5 values → 8');
 const range = c('Range', 'range = largest − smallest', [V('R', 'range'), V('L', 'largest'), V('S', 'smallest')], { R: v => v.L - v.S, L: v => v.R + v.S, S: v => v.L - v.R }, '14 − 3 → 11');
 window.FORMULAS = {
-  m1: [r('Multiplying signs', '+ × + = +   − × − = +   + × − = −', '(−4) × (−3) = 12'), r('Index law: multiply', 'aᵐ × aⁿ = aᵐ⁺ⁿ', '5³ × 5⁴ = 5⁷'), r('Index law: divide', 'aᵐ ÷ aⁿ = aᵐ⁻ⁿ', '2⁹ ÷ 2⁶ = 2³'), r('Zero index', 'a⁰ = 1', '7⁰ = 1')],
+  m1: [
+    r('Multiplying: same signs', '+ × + = +\n− × − = +', '(+4) × (+3) = +12  ·  (−4) × (−3) = +12'),
+    r('Multiplying: different signs', '+ × − = −\n− × + = −', '(+4) × (−3) = −12  ·  (−4) × (+3) = −12'),
+    r('Dividing: same signs', '+ ÷ + = +\n− ÷ − = +', '(+12) ÷ (+3) = +4  ·  (−12) ÷ (−3) = +4'),
+    r('Dividing: different signs', '+ ÷ − = −\n− ÷ + = −', '(+12) ÷ (−3) = −4  ·  (−12) ÷ (+3) = −4'),
+    r('Several negatives', 'even number of − signs → answer is +\nodd number of − signs → answer is −', '(−2) × (−3) × (−1) = −6  (three − signs)'),
+    r('Squares', 'a² = a × a\n(+a)² = +a²\n(−a)² = +a²', '(−5)² = (−5) × (−5) = +25'),
+    r('Cubes', 'a³ = a × a × a\n(+a)³ = +a³\n(−a)³ = −a³', '(−2)³ = (−2) × (−2) × (−2) = −8'),
+    r('Square roots', '√(a²) = +a or −a\na positive number has two square roots\na negative number has no square root', '√49 = +7 or −7, since 7² = 49 and (−7)² = 49'),
+    r('Cube roots', '∛(a³) = a\n∛(positive) = positive\n∛(negative) = negative', '∛(−27) = −3, since (−3)³ = −27'),
+    r('Multiplication law', 'aᵐ × aⁿ = aᵐ⁺ⁿ', '5³ × 5⁴ = 5³⁺⁴ = 5⁷'),
+    r('Division law', 'aᵐ ÷ aⁿ = aᵐ⁻ⁿ', '2⁹ ÷ 2⁶ = 2⁹⁻⁶ = 2³'),
+    r('Power of a power', '(aᵐ)ⁿ = aᵐˣⁿ', '(3²)⁴ = 3²ˣ⁴ = 3⁸'),
+    r('Zero index', 'a⁰ = 1   (a ≠ 0)', '7⁰ = 1  ·  (−4)⁰ = 1'),
+    r('Index of one', 'a¹ = a', '9¹ = 9'),
+    r('Power of a product', '(a × b)ⁿ = aⁿ × bⁿ', '(2 × 5)³ = 2³ × 5³ = 8 × 125 = 1000'),
+    r('Power of a quotient', '(a ÷ b)ⁿ = aⁿ ÷ bⁿ', '(6 ÷ 3)² = 6² ÷ 3² = 36 ÷ 9 = 4'),
+    r('Negative index', 'a⁻ⁿ = 1 ÷ aⁿ = 1/aⁿ', '2⁻³ = 1/2³ = 1/8'),
+    r('Fractional index (going further)', 'a^(1/2) = √a\na^(1/3) = ∛a', '25^(1/2) = √25 = 5  ·  8^(1/3) = ∛8 = 2'),
+    r('Index laws with letters', 'multiply the numbers, add the indices of the same letter', '3x² × 4x⁵ = 12x⁷  ·  10y⁶ ÷ 2y² = 5y⁴'),
+  ],
   m2: [c('Circumference (diameter)', 'C = π × d', [V('C', 'circumference', 'cm'), V('d', 'diameter', 'cm')], { C: v => Math.PI * v.d, d: v => v.C / Math.PI }, 'd = 10 cm → C ≈ 31.4 cm'), c('Circumference (radius)', 'C = 2 × π × r', [V('C', 'circumference', 'cm'), V('r', 'radius', 'cm')], { C: v => 2 * Math.PI * v.r, r: v => v.C / (2 * Math.PI) }, 'r = 5 cm → C ≈ 31.4 cm'), c("Euler's formula", 'V + F − E = 2', [V('E', 'edges'), V('V', 'vertices'), V('F', 'faces')], { E: v => v.V + v.F - 2, V: v => v.E - v.F + 2, F: v => v.E - v.V + 2 }, 'Cube: 8 + 6 − 12 = 2')],
   m4: [c('HCF and LCM', 'HCF × LCM = first number × second number', [V('L', 'LCM'), V('H', 'HCF'), V('a', 'first number'), V('b', 'second number')], { L: v => v.a * v.b / v.H, H: v => v.a * v.b / v.L }, '12 and 18: 6 × 36 = 216')],
   m5: [r('Distributive law (expanding)', 'a(b + c) = ab + ac', '3(2x + 4) = 6x + 12'), r('Factorising', 'ab + ac = a(b + c)', '6x + 12 = 6(x + 2)')],
@@ -65,7 +85,7 @@ window.FORMULAS = {
 
 /* which formulas belong to which topic: chapter → { topic: [formula indexes] } */
 window.FSEC = {
-  m1: { '1.1': [0], '1.2': [4, 5], '1.3': [1, 2, 3] }, m2: { '2.2': [3], '2.3': [2], '2.4': [0, 1] }, m3: { '3.2': [0] }, m4: { '4.1': [0] }, m5: { '5.3': [0, 1] },
+  m1: { '1.1': [0, 1, 2, 3, 4], '1.2': [5, 6, 7, 8], '1.3': [9, 10, 11, 12, 13, 14, 15, 16, 17, 18] }, m2: { '2.2': [3], '2.3': [2], '2.4': [0, 1] }, m3: { '3.2': [0] }, m4: { '4.1': [0] }, m5: { '5.3': [0, 1] },
   m6: { '6.1': [2, 3], '6.2': [0, 1], '6.3': [4] }, m7: { '7.1': [0, 1], '7.2': [2] }, m8: { '8.1': [0, 1], '8.3': [0, 1] }, m9: { '9.2': [0], '9.3': [1] }, m10: { '10.2': [0, 1] },
   m11: { '11.1': [0], '11.2': [1, 2, 3], '11.3': [4], '11.4': [5] }, m12: { '12.1': [0], '12.2': [1] }, m13: { '13.1': [0], '13.2': [1] }, m14: { '14.1': [0], '14.2': [0], '14.3': [0], '14.4': [1] },
   m15: { '15.1': [0, 1] }, m16: { '16.3': [0] }, m17: { '17.1': [0] }, m19: { '19.1': [0, 1, 2] }, m20: { '20.2': [0] }, m21: { '21.1': [0], '21.2': [1] }, m22: { '22.1': [1], '22.3': [0] },

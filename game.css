@@ -412,6 +412,7 @@ body.game .order-item { border-radius: 14px; font-family: 'Nunito', 'PhIcon'; fo
 .fm-side-i b { font-size: 13px; font-weight: 800; }
 .fm-side-i small { font-size: 12.5px; font-weight: 700; color: var(--g-ink2); }
 .fm-side .fm-eq { font-size: 16px; padding: 8px 10px; }
+.fm-eq, .xv-h.eq { white-space: pre-line; }
 .fm-topic { max-width: 1000px; margin: 10px auto 0; }
 .fm-det summary { cursor: pointer; font-weight: 800; color: #2f80ed; }
 .fm-strip-h { white-space: nowrap; display: inline-flex; gap: 4px; align-items: center; }

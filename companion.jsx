@@ -56,7 +56,7 @@ function Companion({ open, onClose, ctx }) {
         role: x.role,
         content: x.role === 'user' && i === arr.length - 1 ? `${topicLine}\nHelp style requested: ${m.prompt}\n\nStudent: ${x.content}` : x.content,
       }));
-      let reply = await withTimeout(window.genspark.complete({ messages: [{ role: 'user', content: COMPANION_RULES + '\n\nReply "Ready." to confirm.' }, { role: 'assistant', content: 'Ready.' }, ...history] }), 45000);
+      let reply = await withTimeout(window.genspark.complete({ messages: [{ role: 'user', content: COMPANION_RULES + "\n\nReply \"Ready.\" to confirm." }, { role: "assistant", content: "Ready." }, ...history] }), 120000);
       if (looksLikeAnswerDump(reply)) {
         reply = await window.genspark.complete({ messages: [{ role: 'user', content: COMPANION_RULES + `\n\nRewrite this tutor reply so it does NOT reveal the answer. Turn it into one guiding question and one hint:\n\n${reply}` }] });
       }
@@ -100,7 +100,7 @@ function Companion({ open, onClose, ctx }) {
               {renderMsg(m.content)}
             </div>
           ))}
-          {busy && <div className="msg assistant typing"><i /><i /><i /></div>}
+          {busy && <div className="msg assistant typing"><i /><i /><i /><span style={{ marginLeft: 8, fontSize: 12, opacity: .7 }}>Thinking… this can take up to 30 seconds</span></div>}
         </div>
         <footer className="cmp-foot">
           <div className="cmp-modes">

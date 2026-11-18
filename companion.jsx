@@ -18,6 +18,17 @@ const HELP_MODES = [
   { id: 'similar', label: 'Show a similar example', prompt: 'Make up a similar but different problem with different numbers or words and walk me through it briefly, so I can then try mine.' },
 ];
 
+function offlineHint(text, m, ctx) {
+  const t = String(text).toLowerCase();
+  const tips = [];
+  if (/\^|index|indices|power|²|³|⁴|⁵/.test(t)) tips.push('With the same base, multiplying means ADD the powers and dividing means SUBTRACT them. What do you get if you apply that here?');
+  if (/neg|−|-\s*\d|minus/.test(t)) tips.push('Count the negative signs: an even number gives a positive answer, an odd number gives a negative one.');
+  if (/fraction|\//.test(t)) tips.push('Try making the denominators the same first, or turn mixed numbers into improper fractions.');
+  if (/equation|solve|x\s*=|=/.test(t)) tips.push('Do the same thing to both sides. Which operation would undo the one next to x?');
+  if (/%|percent/.test(t)) tips.push('Write the percentage as a decimal (divide by 100), then multiply.');
+  if (!tips.length) tips.push((m && m.id === 'idea') ? 'Open the Learn cards for this topic: the first card explains the big idea, and the worked example shows each step.' : 'Look at the Formulas tab for this topic and pick the rule that matches your question. What is the first step it tells you to do?');
+  return 'I can\'t reach the AI right now, so here is a quick hint instead: ' + tips[0] + ' (Tap send again in a moment to try the AI.)';
+}
 function withTimeout(p, ms) { return Promise.race([p, new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), ms))]); }
 
 /* light client-side guard: catch replies that look like they hand over an answer */
@@ -52,17 +63,18 @@ function Companion({ open, onClose, ctx }) {
     const next = [...msgs, userMsg];
     setMsgs(next); setDraft(''); setBusy(true);
     try {
-      const history = next.slice(-10).map((x, i, arr) => ({
+      const history = next.filter(x => !x.err).slice(-10).map((x, i, arr) => ({
         role: x.role,
         content: x.role === 'user' && i === arr.length - 1 ? `${topicLine}\nHelp style requested: ${m.prompt}\n\nStudent: ${x.content}` : x.content,
       }));
-      let reply = await withTimeout(window.genspark.complete({ messages: [{ role: 'user', content: COMPANION_RULES + "\n\nReply \"Ready.\" to confirm." }, { role: "assistant", content: "Ready." }, ...history] }), 120000);
+      let reply = await withTimeout(window.genspark.complete({ messages: [{ role: 'system', content: COMPANION_RULES }, ...history] }), 150000);
       if (looksLikeAnswerDump(reply)) {
         reply = await window.genspark.complete({ messages: [{ role: 'user', content: COMPANION_RULES + `\n\nRewrite this tutor reply so it does NOT reveal the answer. Turn it into one guiding question and one hint:\n\n${reply}` }] });
       }
       setMsgs(v => [...v, { role: 'assistant', content: reply }]);
     } catch (e) {
-      setMsgs(v => [...v, { role: 'assistant', content: e && e.message === 'timeout' ? 'That took too long. Please send your message again.' : 'I could not connect just now. Try again in a moment.', err: true }]);
+      if (window.console) console.warn('[Study buddy] AI failed:', e && e.message);
+      setMsgs(v => [...v, { role: 'assistant', content: offlineHint(text, m, ctx), err: true, offline: true }]);
     }
     setBusy(false);
   };

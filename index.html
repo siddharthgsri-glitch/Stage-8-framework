@@ -18,45 +18,7 @@
 </head>
 <body>
 <div id="root"></div>
-<script>
-/* AI bridge: 1) your own key via /api/complete on Vercel (if configured), 2) free keyless fallback. */
-(function () {
-  if (window.genspark && window.genspark.complete) return;
-  var SYS = 'You are a friendly, encouraging tutor for Cambridge Lower Secondary Stage 8 students aged 12-13. Keep language simple, safe and age-appropriate. Never ask for or include personal information. When asked for JSON, return only valid JSON with no extra text.';
-  var apiOk = !/github\.io$/.test(location.hostname);
-  function norm(arg) { return typeof arg === 'string' ? [{ role: 'user', content: arg }] : (arg.messages || []); }
-  function timeout(ms) { var c = new AbortController(); setTimeout(function () { c.abort(); }, ms); return c.signal; }
-  async function viaApi(msgs) {
-    var r = await fetch('api/complete', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ messages: msgs }), signal: timeout(40000) });
-    if (!r.ok) { if (r.status === 503 || r.status === 404 || r.status === 405) apiOk = false; throw new Error('api ' + r.status); }
-    var j = await r.json(); if (!j.text) throw new Error('empty'); return j.text;
-  }
-  var queue = Promise.resolve(), lastAt = 0;
-  function serial(fn) { var run = queue.then(async function () { var wait = 3200 - (Date.now() - lastAt); if (wait > 0) await new Promise(function (ok) { setTimeout(ok, wait); }); try { return await fn(); } finally { lastAt = Date.now(); } }); queue = run.catch(function () {}); return run; }
-  async function viaFree(msgs) {
-    var conv = [{ role: 'system', content: SYS }].concat(msgs.slice(-12).map(function (m) { return { role: m.role === 'assistant' ? 'assistant' : 'user', content: String(m.content).slice(0, 6000) }; }));
-    var lastErr;
-    for (var i = 0; i < 4; i++) {
-      try {
-        var t = await serial(async function () {
-          var r = await fetch('https://text.pollinations.ai/openai', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ model: 'openai', messages: conv, private: true, seed: Math.floor(Math.random() * 1e6) }), signal: timeout(50000) });
-          if (!r.ok) throw new Error('free ' + r.status);
-          var j = await r.json(); var x = j.choices && j.choices[0] && j.choices[0].message && j.choices[0].message.content;
-          if (!x) throw new Error('empty'); return x;
-        });
-        return String(t).replace(/\*\*(.+?)\*\*/g, '$1').replace(/\\\(|\\\)/g, '').trim();
-      } catch (e) { lastErr = e; await new Promise(function (ok) { setTimeout(ok, 2500 + i * 2500); }); }
-    }
-    throw lastErr || new Error('AI unavailable');
-  }
-  async function complete(arg) {
-    var msgs = norm(arg);
-    if (apiOk) { try { return await viaApi(msgs); } catch (e) {} }
-    return await viaFree(msgs);
-  }
-  window.genspark = { complete: complete }; window.claude = window.genspark;
-})();
-</script>
+<script src="ai.js?v=3"></script>
 <script src="icons.js?v=1"></script>
 <script src="auth-boot.js?v=13"></script>
 <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
@@ -67,7 +29,7 @@
 <script type="text/babel" src="interactives8.jsx?v=16"></script>
 <script type="text/babel" src="chapters8.jsx?v=16"></script>
 <script type="text/babel" src="player.jsx?v=16"></script>
-<script type="text/babel" src="companion.jsx?v=20"></script>
+<script type="text/babel" src="companion.jsx?v=21"></script>
 <script type="text/babel" src="speaking.jsx?v=16"></script>
 <script type="text/babel" src="topic8.jsx?v=16"></script>
 <script type="text/babel" src="w-core.jsx?v=16"></script>

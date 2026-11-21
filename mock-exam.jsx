@@ -5,9 +5,11 @@ function MockExam2({ go }) {
   const chOfSub = s => BOOK.filter(c => c.subj === s && !c.review);
   const [subj, setSubj] = React.useState('maths'), [len, setLen] = React.useState(20);
   const [picked, setPicked] = React.useState(() => chOfSub('maths').map(c => c.id));
+  const [draft, setDraft] = React.useState(null);
   const [items, setItems] = React.useState(null), [ans, setAns] = React.useState({}), [qi, setQi] = React.useState(0), [left, setLeft] = React.useState(0), [res, setRes] = React.useState(null), [marking, setMarking] = React.useState(false), [t0, setT0] = React.useState(0);
   const hist = LS8.get('s8f-exams', []);
-  const pickSub = s => { setSubj(s); setPicked(chOfSub(s).map(c => c.id)); };
+  const pickSub = s => { setSubj(s); setPicked(chOfSub(s).map(c => c.id)); setDraft(null); };
+  React.useEffect(() => { setDraft(null); }, [picked.join(','), len]);
   const title = () => `${SUBJ_NM[subj]} mock exam`;
   const build = () => {
     const all = SR.all(); const chs = chOfSub(subj).filter(c => picked.includes(c.id)); const out = [];
@@ -63,7 +65,8 @@ function MockExam2({ go }) {
   }
 
   const chs = chOfSub(subj);
-  const start = () => { const its = build(); if (!its.length) return; setItems(its); setAns({}); setQi(0); setLeft(its.length * 90); setT0(Date.now()); window.scrollTo(0, 0); };
+  const getDraft = () => { if (draft && draft.length) return draft; const d = build(); setDraft(d); return d; };
+  const start = () => { const its = getDraft(); if (!its.length) return; setDraft(null); setItems(its); setAns({}); setQi(0); setLeft(its.length * 90); setT0(Date.now()); window.scrollTo(0, 0); };
   return (
     <div className="wrap g-page" data-screen-label="Mock exams">
       <PageHead ic={ic('exam')} title="Checkpoint mock exams" sub="Pick a subject and the chapters you want to be tested on. Sit a timed exam-style paper, then get it marked: grade, every correct answer, the full mark scheme and a report card, all downloadable as Word documents." grad="linear-gradient(135deg,#4facfe,#7f5af0)" />
@@ -75,13 +78,14 @@ function MockExam2({ go }) {
         </label>
         <label>{ic('timer')} Length<div className="chips">{[[10, 'Short · 10 Qs · 15 min'], [20, 'Standard · 20 Qs · 30 min'], [30, 'Full · 30 Qs · 45 min']].map(([n, l]) => <button key={n} className={'chip' + (len === n ? ' on' : '')} onClick={() => setLen(n)}>{l}</button>)}</div></label>
         <div className="g-row">
-          <button className="btn g-btn big" disabled={!picked.length} onClick={start}>{ic('note-pencil')} Start the exam</button>
-          <button className="btn g-btn ghost" disabled={!picked.length} onClick={() => downloadBlankPaper(title(), subj, build(), 'paper')}>{ic('download-simple')} Question paper (Word)</button>
-          <button className="btn g-btn ghost" disabled={!picked.length} onClick={() => downloadBlankPaper(title(), subj, build(), 'blank')}>{ic('download-simple')} Paper + mark scheme (Word)</button>
+          <button className="btn g-btn big" disabled={!picked.length} onClick={start}>{ic('note-pencil')} Start the exam{draft ? ' (same paper)' : ''}</button>
+          <button className="btn g-btn ghost" disabled={!picked.length} onClick={() => downloadBlankPaper(title(), subj, getDraft(), 'paper')}>{ic('download-simple')} Question paper (Word)</button>
+          <button className="btn g-btn ghost" disabled={!picked.length} onClick={() => downloadBlankPaper(title(), subj, getDraft(), 'key')}>{ic('download-simple')} Answer key (Word)</button>
+          <button className="btn g-btn ghost" disabled={!picked.length} onClick={() => downloadBlankPaper(title(), subj, getDraft(), 'blank')}>{ic('download-simple')} Paper + answer key (Word)</button>
         </div>
         {!picked.length && <span className="st-err">Choose at least one chapter.</span>}
       </div>
-      {hist.length > 0 && <><h2 className="g-h2">Past papers</h2><div className="st-hist">{hist.map((h, i) => <div key={h.id || i} className="g-card st-hrow" style={{ gridTemplateColumns: '1.2fr 1fr 70px 70px auto' }}><span>{SUBJ_IC[h.subj]} {SUBJ_NM[h.subj]}</span><span className="g-sub">{new Date(h.date).toLocaleDateString()}</span><b>{h.got}/{h.tot}</b><span className={'st-pill ' + (h.pct >= 60 ? 'ok' : 'bad')}>{h.pct}%</span>{h.rows ? <span className="g-row" style={{ gap: 6 }}><button className="g-pill" onClick={() => setRes(h)}>{ic('eye')} Answers</button><button className="g-pill" onClick={() => downloadPaperDoc(h, 'all')}>{ic('download-simple')} Word</button></span> : <span className="g-sub">older paper</span>}</div>)}</div></>}
+      {hist.length > 0 && <><h2 className="g-h2">Past papers</h2><div className="st-hist">{hist.map((h, i) => <div key={h.id || i} className="g-card st-hrow" style={{ gridTemplateColumns: '1.2fr 1fr 70px 70px auto' }}><span>{SUBJ_IC[h.subj]} {SUBJ_NM[h.subj]}</span><span className="g-sub">{new Date(h.date).toLocaleDateString()}</span><b>{h.got}/{h.tot}</b><span className={'st-pill ' + (h.pct >= 60 ? 'ok' : 'bad')}>{h.pct}%</span>{h.rows ? <span className="g-row" style={{ gap: 6 }}><button className="g-pill" onClick={() => setRes(h)}>{ic('eye')} Answers</button><button className="g-pill" onClick={() => downloadPaperDoc(h, 'paper')}>{ic('download-simple')} Paper</button><button className="g-pill" onClick={() => downloadPaperDoc(h, 'key')}>{ic('download-simple')} Answer key</button></span> : <span className="g-sub">older paper</span>}</div>)}</div></>}
     </div>
   );
 }

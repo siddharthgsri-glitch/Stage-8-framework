@@ -159,6 +159,7 @@ function SpeakingCompanion({ initialLang = 'french', initialSet, onAsk }) {
   const speak = (text, rate) => {
     if (!window.speechSynthesis) return;
     speechSynthesis.cancel();
+    if (L.lang.startsWith('fr') && window.FRVOICE) { FRVOICE.say(text, { slow: slow || (rate && rate < 0.7), rate: rate || 0.9 }); return; }
     const u = new SpeechSynthesisUtterance(text); u.lang = L.lang; if (voice) u.voice = voice; u.rate = rate || (slow ? 0.6 : 0.92);
     speechSynthesis.speak(u);
   };

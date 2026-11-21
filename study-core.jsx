@@ -122,7 +122,7 @@ document.addEventListener('click', e => {
   const t = (el.innerText || '').trim(); if (!t || t.length > 600) return;
   speechSynthesis.cancel();
   const fr = /[àâçéèêëîïôûùüÿœ]/i.test(t) && /\b(je|tu|il|nous|vous|le|la|les|est|et|une|un|des)\b/i.test(t);
-  const u = new SpeechSynthesisUtterance(t.replace(/[✓✗]/gu, '')); u.lang = fr ? 'fr-FR' : 'en-GB'; u.rate = 0.95; speechSynthesis.speak(u);
+  if (fr && window.FRVOICE) { FRVOICE.say(t); } else {const u = new SpeechSynthesisUtterance(t.replace(/[✓✗]/gu, '')); u.lang = fr ? 'fr-FR' : 'en-GB'; u.rate = 0.95; speechSynthesis.speak(u); }
   document.querySelectorAll('.a11y-reading').forEach(x => x.classList.remove('a11y-reading'));
   el.classList.add('a11y-reading'); u.onend = () => el.classList.remove('a11y-reading');
 }, true);

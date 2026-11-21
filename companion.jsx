@@ -54,6 +54,8 @@ function Companion({ open, onClose, ctx }) {
     if (open && ctx && ctx.seed) { setDraft(ctx.seed); }
   }, [open, ctx]);
 
+  const [waitS, setWaitS] = React.useState(0);
+  React.useEffect(() => window.S8AI && S8AI.onWait ? S8AI.onWait(setWaitS) : undefined, []);
   const send = async (textOverride) => {
     const text = (textOverride != null ? textOverride : draft).trim();
     if (!text || busy) return;
@@ -112,7 +114,7 @@ function Companion({ open, onClose, ctx }) {
               {renderMsg(m.content)}
             </div>
           ))}
-          {busy && <div className="msg assistant typing"><i /><i /><i /><span style={{ marginLeft: 8, fontSize: 12, opacity: .7 }}>Thinking… this can take up to 30 seconds</span></div>}
+          {busy && <div className="msg assistant typing"><i /><i /><i /><span style={{ marginLeft: 8, fontSize: 12, opacity: .75 }}>{waitS > 0 ? `In the queue: your answer starts in ${waitS}s` : 'Thinking…'}</span></div>}
         </div>
         <footer className="cmp-foot">
           <div className="cmp-modes">

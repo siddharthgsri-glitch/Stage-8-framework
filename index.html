@@ -8,7 +8,7 @@
 <link rel="stylesheet" href="margin8.css?v=17" />
 <link rel="stylesheet" href="widgets.css?v=17" />
 <link rel="stylesheet" href="game.css?v=31" />
-<link rel="stylesheet" href="study.css?v=33" />
+<link rel="stylesheet" href="study.css?v=34" />
 <link rel="stylesheet" href="units.css?v=10" />
 <link rel="stylesheet" href="icons.css?v=7" />
 <link rel="preload" href="assets/icons/Phosphor-Fill.woff2" as="font" type="font/woff2" crossorigin />
@@ -18,7 +18,8 @@
 </head>
 <body>
 <div id="root"></div>
-<script src="ai.js?v=3"></script>
+<script src="voices.js?v=1"></script>
+<script src="ai.js?v=4"></script>
 <script src="icons.js?v=1"></script>
 <script src="auth-boot.js?v=13"></script>
 <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
@@ -29,8 +30,8 @@
 <script type="text/babel" src="interactives8.jsx?v=16"></script>
 <script type="text/babel" src="chapters8.jsx?v=16"></script>
 <script type="text/babel" src="player.jsx?v=16"></script>
-<script type="text/babel" src="companion.jsx?v=21"></script>
-<script type="text/babel" src="speaking.jsx?v=16"></script>
+<script type="text/babel" src="companion.jsx?v=22"></script>
+<script type="text/babel" src="speaking.jsx?v=30"></script>
 <script type="text/babel" src="topic8.jsx?v=16"></script>
 <script type="text/babel" src="w-core.jsx?v=16"></script>
 <script type="text/babel" src="w-number.jsx?v=16"></script>
@@ -45,7 +46,7 @@
 <script type="text/babel" src="w-phys2.jsx?v=16"></script>
 <script type="text/babel" src="w-computing.jsx?v=16"></script>
 <script type="text/babel" src="w-maths2.jsx?v=16"></script>
-<script type="text/babel" src="w-english.jsx?v=16"></script>
+<script type="text/babel" src="w-english.jsx?v=30"></script>
 <script type="text/babel" src="w-french.jsx?v=30"></script>
 <script type="text/babel" src="w-fluids.jsx?v=16"></script>
 <script type="text/babel" src="book-maths-a.jsx?v=16"></script>
@@ -61,12 +62,13 @@
 <script type="text/babel" src="game.jsx?v=16"></script>
 <script type="text/babel" src="auth.jsx?v=16"></script>
 <script type="text/babel" src="player8.jsx?v=19"></script>
-<script type="text/babel" src="study-core.jsx?v=16"></script>
+<script type="text/babel" src="study-core.jsx?v=30"></script>
 <script type="text/babel" src="study-pages.jsx?v=21"></script>
-<script type="text/babel" src="units.jsx?v=7"></script>
-<script type="text/babel" src="paper.jsx?v=1"></script>
+<script type="text/babel" src="units.jsx?v=10"></script>
+<script type="text/babel" src="paper.jsx?v=3"></script>
 <script type="text/babel" src="boss-treasure.jsx?v=1"></script>
 <script type="text/babel" src="study-labs.jsx?v=16"></script>
+<script type="text/babel" src="mock-exam.jsx?v=1"></script>
 <script type="text/babel">
 const { useState: uS, useEffect: uE } = React;
 const CUR = window.CURRICULUM;
@@ -207,8 +209,8 @@ function App() {
   else if (kind === 'paper') body = <PaperPage key={a} uid={a} go={setRoute} />;
   else if (kind === 'mix') body = <DailyMix key={route} go={setRoute} />;
   else if (kind === 'mistakes') body = <Mistakes go={setRoute} />;
-  else if (kind === 'exam') body = <MockExam go={setRoute} />;
-  else if (kind === 'planner') body = <Planner go={setRoute} />;
+  else if (kind === 'exam') body = React.createElement(window.MockExam2 || MockExam, { go: setRoute });
+  else if (kind === 'planner') body = React.createElement(window.PlannerPick || Planner, { go: setRoute });
   else if (kind === 'album') body = <Album />;
   else if (kind === 'report') body = <Report go={setRoute} />;
   else if (kind === 'class') body = <ClassChallenge go={setRoute} />;

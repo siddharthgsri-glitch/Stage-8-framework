@@ -1,5 +1,7 @@
 /* English models */
 function enSay(t, lang = 'en-GB', rate = 0.95, pitch = 1, onend) {
+  if (String(lang).toLowerCase().startsWith('fr') && window.FRVOICE) { FRVOICE.say(t, { rate, slow: rate < 0.65, onend }); return; }
+  if (window.FRVOICE) FRVOICE.stop();
   if (!window.speechSynthesis) { onend && onend(); return; }
   const u = new SpeechSynthesisUtterance(t); u.lang = lang; u.rate = rate; u.pitch = pitch;
   const vs = speechSynthesis.getVoices(); const v = vs.find(x => x.lang === lang) || vs.find(x => x.lang && x.lang.slice(0, 2) === lang.slice(0, 2)); if (v) u.voice = v;

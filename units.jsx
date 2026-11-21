@@ -120,7 +120,7 @@ function ExplainerVideo({ scenes, vkey, onEnd, compact }) {
   const [si, setSi] = React.useState(0), [play, setPlay] = React.useState(false), [cc, setCc] = React.useState(true), [mute, setMute] = React.useState(false), [ended, setEnded] = React.useState(false), [el, setEl] = React.useState(0), [rev, setRev] = React.useState(false), [line, setLine] = React.useState('');
   const S = scenes[si];
   const tok = React.useRef({ dead: true });
-  const stopAll = () => { tok.current.dead = true; window.speechSynthesis && speechSynthesis.cancel(); };
+  const stopAll = () => { tok.current.dead = true; window.speechSynthesis && speechSynthesis.cancel(); window.FRVOICE && FRVOICE.stop(); };
   React.useEffect(() => {
     setRev(false); setEl(0);
     if (!play) return;
@@ -192,6 +192,7 @@ function sayChunksWithCaption(chunks, onLine, onDone, token) {
   const next = () => {
     if (token.dead) return; if (i >= parts.length) { fin(true); return; }
     const [txt, lang] = parts[i++]; onLine(txt);
+    if (lang.startsWith('fr') && window.FRVOICE) { let fdone = false; const fg = setTimeout(() => { if (!fdone && !token.dead) { fdone = true; FRVOICE.stop(); next(); } }, 3000 + txt.split(/\s+/).length * 900); FRVOICE.say(txt, { onend: () => { if (fdone) return; fdone = true; clearTimeout(fg); setTimeout(next, 250); } }); return; }
     const u = new SpeechSynthesisUtterance(txt);
     const v = lang.startsWith('fr') ? VOICE.fr : VOICE.en; if (v) u.voice = v; u.lang = lang; u.rate = lang.startsWith('fr') ? 0.85 : 0.98; u.pitch = 1.03;
     let fired = false; const guard = setTimeout(() => { if (!fired && !token.dead) { fired = true; synth.cancel(); next(); } }, 2000 + txt.split(/\s+/).length * 700);
